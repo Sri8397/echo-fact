@@ -16,7 +16,7 @@ export default function App() {
   const [mobileTab, setMobileTab] = useState('split'); // 'split', 'map', 'stream'
 
   const currentPath = window.location.pathname;
-  const isAdminRoute = currentPath === '/admin';
+  const isAdminRoute = currentPath.endsWith('/admin') || currentPath === '/admin';
 
   // Load live incident records directly from SQLite Database on mount
   const refreshIncidentsFromDb = async () => {

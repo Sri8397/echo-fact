@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+backend/venv/
+venv/
+
+# Build & Dist output
+dist/
+build/
+
+# Environment & local config
+.env
+*.env.local
+
+# Python cache & compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Database (optional local state)
+backend/data/*.db

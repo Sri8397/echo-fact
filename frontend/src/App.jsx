@@ -16,7 +16,23 @@ export default function App() {
   const [mobileTab, setMobileTab] = useState('split'); // 'split', 'map', 'stream'
 
   const currentPath = window.location.pathname;
-  const isAdminRoute = currentPath.endsWith('/admin') || currentPath === '/admin';
+  const currentHash = window.location.hash;
+
+  const isAdminRoute =
+    currentPath.endsWith('/admin') ||
+    currentPath === '/admin' ||
+    currentHash === '#/admin' ||
+    currentHash === '#admin';
+
+  const getPathId = () => {
+    if (currentHash && currentHash.startsWith('#')) {
+      return currentHash.replace(/^#\/?/, '');
+    }
+    const cleanPath = currentPath.replace(/\/$/, '');
+    const parts = cleanPath.split('/').filter(Boolean);
+    const lastPart = parts.length > 0 ? parts[parts.length - 1] : '';
+    return lastPart === 'echo-fact' ? '' : lastPart;
+  };
 
   // Load live incident records directly from SQLite Database on mount
   const refreshIncidentsFromDb = async () => {
@@ -24,8 +40,7 @@ export default function App() {
     if (data) {
       setIncidents(data);
 
-      // Check if current URL path matches an incident ID (e.g. /case-cjpprotestliveu)
-      const pathId = window.location.pathname.replace(/^\//, '');
+      const pathId = getPathId();
       if (pathId && pathId !== 'admin') {
         const found = data.find((inc) => inc.id === pathId);
         if (found) {
@@ -42,10 +57,10 @@ export default function App() {
     }
   }, [isAdminRoute]);
 
-  // Handle Browser Back / Forward Button Navigation (popstate)
+  // Handle Browser Back / Forward Button Navigation (popstate) & Hash Change
   useEffect(() => {
-    const handlePopState = () => {
-      const pathId = window.location.pathname.replace(/^\//, '');
+    const handleNavigationChange = () => {
+      const pathId = getPathId();
       if (!pathId || pathId === 'admin') {
         setSelectedIncident(null);
       } else if (incidents.length > 0) {
@@ -59,8 +74,12 @@ export default function App() {
       }
     };
 
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener('popstate', handleNavigationChange);
+    window.addEventListener('hashchange', handleNavigationChange);
+    return () => {
+      window.removeEventListener('popstate', handleNavigationChange);
+      window.removeEventListener('hashchange', handleNavigationChange);
+    };
   }, [incidents]);
 
   const filteredIncidents = useMemo(() => {

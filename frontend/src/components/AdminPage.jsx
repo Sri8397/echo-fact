@@ -309,7 +309,7 @@ export default function AdminPage() {
           {/* Return to Radar */}
           <div className="text-center pt-1">
             <a
-              href="/"
+              href="./"
               className={`inline-flex items-center gap-1.5 text-xs transition font-medium ${
                 isLight ? 'text-slate-600 hover:text-emerald-700' : 'text-slate-400 hover:text-emerald-400'
               }`}
@@ -372,7 +372,7 @@ export default function AdminPage() {
           </button>
 
           <a
-            href="/"
+            href="./"
             className={`px-3 py-1.5 border text-xs font-semibold rounded-xl transition flex items-center gap-1.5 ${
               isLight
                 ? 'bg-white hover:bg-slate-50 text-slate-700 border-slate-300'

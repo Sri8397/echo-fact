@@ -1,7 +1,5 @@
 from google import genai
 from google.genai import types
-from tools.news_search import search_google_news
-from tools.web_scraper import fetch_article_text
 
 def run_researcher_agent(client: genai.Client, candidate_topics: str) -> str:
     """Researcher Agent: deep-dives incident timelines, URLs, and summaries."""

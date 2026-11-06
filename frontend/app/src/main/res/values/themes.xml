@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="suvidha_canvas">#F5F7F5</color>
+    <color name="suvidha_green">#1B7A5A</color>
+    <color name="ic_launcher_background">#1B7A5A</color>
+    <style name="Theme.SuvidhaRadar" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/suvidha_canvas</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>

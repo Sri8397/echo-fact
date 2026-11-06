@@ -1,0 +1,18 @@
+rule: incident_delete
+description: Deletes one stored incident by id. Admin token required.
+inputs: [admin_token, incident_id]
+steps:
+  - rule: admin_auth_gate
+  - action: delete_stored_incident
+    args:
+      incident_id: $incident_id
+    result: deleted
+  - condition: incident_was_deleted
+    args:
+      deleted: $deleted
+    otherwise:
+      status: 404
+      detail: "Incident with ID '{incident_id}' not found."
+  - respond:
+      status: success
+      message: "Incident '{incident_id}' deleted."

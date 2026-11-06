@@ -1,0 +1,10 @@
+rule: admin_auth_gate
+description: Shared gate for every protected endpoint. Rejects a missing or unknown admin session token.
+inputs: [admin_token]
+steps:
+  - condition: admin_token_valid
+    args:
+      token: $admin_token
+    otherwise:
+      status: 401
+      detail: "Unauthorized: Admin session token is missing or invalid. Please log in via Admin Console."

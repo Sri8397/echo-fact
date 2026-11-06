@@ -6,3 +6,5 @@ beautifulsoup4
 feedparser
 python-dotenv
 cryptography
+PyYAML
+google-genai

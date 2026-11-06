@@ -1,6 +1,4 @@
 import os
-import json
-import asyncio
 import re
 import urllib.parse
 from typing import List, Dict, Any, Optional
@@ -12,7 +10,7 @@ from agents.fact_checker import run_fact_checker_agent
 from agents.writer import run_writer_agent
 
 from models.incident import Incident
-from tools.web_scraper import fetch_article_text, scrape_article_details
+from tools.web_scraper import scrape_article_details
 from database import load_stored_incidents, save_incidents
 
 def get_genai_client() -> genai.Client:

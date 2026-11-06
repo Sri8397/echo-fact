@@ -1,5 +1,5 @@
 import pydantic
-from typing import List, Optional
+from typing import List
 
 class TimelineEvent(pydantic.BaseModel):
     year: str

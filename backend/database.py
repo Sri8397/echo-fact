@@ -1,7 +1,7 @@
 import os
 import json
 import sqlite3
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "data", "incidents.db")
 

@@ -1,0 +1,7 @@
+rule: incident_list
+description: Public read of every stored incident.
+inputs: []
+steps:
+  - action: list_stored_incidents
+    result: incidents
+  - respond: $incidents

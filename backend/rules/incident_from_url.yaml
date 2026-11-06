@@ -1,0 +1,19 @@
+rule: incident_from_url
+description: Turns a news URL into a stored incident. Admin token required. The URL must be http or https.
+inputs: [admin_token, url]
+steps:
+  - rule: admin_auth_gate
+  - condition: url_is_http
+    args:
+      url: $url
+    otherwise:
+      status: 400
+      detail: "Invalid URL provided. Must start with http:// or https://"
+  - action: process_url
+    args:
+      url: $url
+    result: incident
+    on_error:
+      status: 500
+      detail: "Failed to process URL into incident: {error}"
+  - respond: $incident

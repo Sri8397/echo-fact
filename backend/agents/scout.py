@@ -1,6 +1,5 @@
 from google import genai
 from google.genai import types
-from tools.news_search import search_google_news
 
 def run_scout_agent(client: genai.Client, topic_prompt: str) -> str:
     """News Scout Agent: identifies candidate news incidents matching target categories."""

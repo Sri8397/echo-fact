@@ -1,0 +1,15 @@
+rule: pipeline_run
+description: Starts the multi-agent pipeline in the background. Admin token required.
+inputs: [admin_token, background_tasks, prompt]
+steps:
+  - rule: admin_auth_gate
+  - action: schedule_pipeline
+    args:
+      background_tasks: $background_tasks
+      prompt: $prompt
+    on_error:
+      status: 500
+      detail: "{error}"
+  - respond:
+      status: pipeline_started
+      message: "ADK Multi-Agent Pipeline launched in background with prompt: '{prompt}'."

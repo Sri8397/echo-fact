@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.just_sri.suvidha.radar.data.ApiException
+import com.just_sri.suvidha.radar.data.FALLBACK_INCIDENTS
 import com.just_sri.suvidha.radar.data.GENERIC_FAILURE
 import com.just_sri.suvidha.radar.data.Incident
 import com.just_sri.suvidha.radar.data.IncidentLoad
@@ -25,6 +26,9 @@ val REGIONS: List<Region> = listOf(
     Region("europe", "Europe", 50.0, 15.0, 4.0),
     Region("asia", "Asia-Pacific", 25.0, 105.0, 3.0),
 )
+
+// Keeps backend calls disabled for this prototype build.
+const val RADAR_PROTOTYPE: Boolean = true
 
 const val ALL_CATEGORIES: String = "all"
 
@@ -80,6 +84,7 @@ data class RadarState(
     val incidents: List<Incident> = emptyList(),
     val isLive: Boolean = false,
     val isLoading: Boolean = true,
+    val showSignals: Boolean = true,
     val query: String = "",
     val category: String = ALL_CATEGORIES,
     val regionId: String = "world",
@@ -134,7 +139,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val colorStyle: StateFlow<ColorStyle> = _colorStyle.asStateFlow()
 
     /** true = 3D globe, false = flat 2D map. */
-    private val _isGlobe = MutableStateFlow(prefs.getBoolean(KEY_GLOBE, false))
+    private val _isGlobe = MutableStateFlow(RADAR_PROTOTYPE || prefs.getBoolean(KEY_GLOBE, false))
     val isGlobe: StateFlow<Boolean> = _isGlobe.asStateFlow()
 
     fun setGlobe(isGlobe: Boolean) {
@@ -159,6 +164,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     // ---- radar ----
 
     fun refresh() {
+        if (RADAR_PROTOTYPE) {
+            _radar.update { it.copy(incidents = FALLBACK_INCIDENTS, isLive = false, isLoading = false) }
+            return
+        }
         _radar.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             val load: IncidentLoad = api.fetchIncidents()
@@ -167,6 +176,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 state.copy(incidents = load.incidents, isLive = load.isLive, isLoading = false, selectedId = keepSelection)
             }
         }
+    }
+
+    fun showSignals(show: Boolean) {
+        _radar.update { it.copy(showSignals = show) }
     }
 
     fun setQuery(query: String) {
@@ -234,6 +247,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     /** Opens the admin console (sign-in when signed out), optionally on a given tab. Back returns to Settings. */
     fun openAdmin(tab: AdminTab? = null) {
+        if (RADAR_PROTOTYPE) return
         _admin.update { it.copy(isSignedIn = api.isSignedIn(), tab = tab ?: it.tab) }
         _screen.value = Screen.ADMIN
     }

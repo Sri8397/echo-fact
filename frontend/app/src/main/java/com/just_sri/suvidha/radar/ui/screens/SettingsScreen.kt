@@ -51,6 +51,7 @@ import com.just_sri.suvidha.radar.AdminState
 import com.just_sri.suvidha.radar.AdminTab
 import com.just_sri.suvidha.radar.AppViewModel
 import com.just_sri.suvidha.radar.BuildConfig
+import com.just_sri.suvidha.radar.RADAR_PROTOTYPE
 import com.just_sri.suvidha.radar.ThemeChoice
 import com.just_sri.suvidha.radar.ui.components.Panel
 import androidx.compose.material.icons.outlined.Public
@@ -76,36 +77,46 @@ private val IconTileShape: RoundedCornerShape = RoundedCornerShape(12.dp)
 fun SettingsScreen(admin: AdminState, theme: ThemeChoice, storyCount: Int, isLive: Boolean, model: AppViewModel) {
     val colors = LocalSuvidhaColors.current
     val isGlobe: Boolean by model.isGlobe.collectAsStateWithLifecycle()
+    val colorStyle: ColorStyle by model.colorStyle.collectAsStateWithLifecycle()
     BackHandler(onBack = model::closeSettings)
     SettingsPage("Settings", onBack = model::closeSettings) {
         item { SectionHeading("Appearance") }
         item {
             Panel {
-                SettingsRow("Theme", "${theme.title} · ${model.colorStyle.value.title}", Icons.Outlined.Palette, onClick = model::openTheme, divider = true)
-                SettingsRow(
-                    title = "3D globe",
-                    subtitle = if (isGlobe) "Map shows a 3D globe" else "Map shows a flat 2D view",
-                    icon = Icons.Outlined.Public,
-                    onClick = { model.setGlobe(!isGlobe) },
-                    trailing = {
-                        Switch(
-                            checked = isGlobe,
-                            onCheckedChange = { model.setGlobe(it) },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = colors.onGreen,
-                                checkedTrackColor = colors.green,
-                                uncheckedThumbColor = colors.cardSurface,
-                                uncheckedTrackColor = colors.borderLight,
-                                uncheckedBorderColor = Color.Transparent,
-                                checkedBorderColor = Color.Transparent,
-                            ),
-                        )
-                    },
-                    showChevron = false,
-                )
+                SettingsRow("Theme", "${theme.title} · ${colorStyle.title}", Icons.Outlined.Palette, onClick = model::openTheme, divider = !RADAR_PROTOTYPE)
+                if (!RADAR_PROTOTYPE) {
+                    SettingsRow(
+                        title = "3D globe",
+                        subtitle = if (isGlobe) "Map shows a 3D globe" else "Map shows a flat 2D view",
+                        icon = Icons.Outlined.Public,
+                        onClick = { model.setGlobe(!isGlobe) },
+                        trailing = {
+                            Switch(
+                                checked = isGlobe,
+                                onCheckedChange = { model.setGlobe(it) },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = colors.onGreen,
+                                    checkedTrackColor = colors.green,
+                                    uncheckedThumbColor = colors.cardSurface,
+                                    uncheckedTrackColor = colors.borderLight,
+                                    uncheckedBorderColor = Color.Transparent,
+                                    checkedBorderColor = Color.Transparent,
+                                ),
+                            )
+                        },
+                        showChevron = false,
+                    )
+                }
             }
         }
-        if (admin.isSignedIn) {
+        if (RADAR_PROTOTYPE) {
+            item { SectionHeading("Data") }
+            item {
+                Panel {
+                    SettingsRow("Prototype mode", "Bundled signals and sample stories", Icons.Outlined.CloudQueue, showChevron = false)
+                }
+            }
+        } else if (admin.isSignedIn) {
             item { SectionHeading("Admin", detail = "Super admin") }
             item {
                 Panel {
@@ -125,11 +136,11 @@ fun SettingsScreen(admin: AdminState, theme: ThemeChoice, storyCount: Int, isLiv
         item { SectionHeading("About") }
         item {
             Panel {
-                SettingsRow("Version", null, Icons.Outlined.Info, trailingText = BuildConfig.VERSION_NAME, showChevron = false, divider = true)
-                SettingsRow("Server", if (isLive) "Connected" else "Offline, showing sample stories", Icons.Outlined.CloudQueue, trailingText = serverLabel(model.apiBaseUrl), showChevron = false)
+                SettingsRow("Version", null, Icons.Outlined.Info, trailingText = BuildConfig.VERSION_NAME, showChevron = false, divider = !RADAR_PROTOTYPE)
+                if (!RADAR_PROTOTYPE) SettingsRow("Server", if (isLive) "Connected" else "Offline, showing sample stories", Icons.Outlined.CloudQueue, trailingText = serverLabel(model.apiBaseUrl), showChevron = false)
             }
         }
-        if (admin.isSignedIn) {
+        if (!RADAR_PROTOTYPE && admin.isSignedIn) {
             item {
                 Panel {
                     SettingsRow("Sign out", null, Icons.AutoMirrored.Outlined.Logout, onClick = model::signOut, tint = colors.danger, showChevron = false)

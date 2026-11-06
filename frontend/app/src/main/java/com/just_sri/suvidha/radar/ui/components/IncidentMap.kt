@@ -1,6 +1,7 @@
 package com.just_sri.suvidha.radar.ui.components
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.just_sri.suvidha.radar.FlyTarget
 import com.just_sri.suvidha.radar.data.Incident
@@ -17,7 +18,13 @@ fun IncidentMap(
     modifier: Modifier = Modifier,
 ) {
     if (isGlobe) {
-        GlobeMap(incidents, selectedId, fly, onSelect, onZoomChanged, modifier)
+        val markers = remember(incidents) { incidents.map { GlobeMarker(it.id, it.lat, it.lng) } }
+        GlobeMap(
+            markers, selectedId, fly,
+            onSelect = { id -> incidents.firstOrNull { it.id == id }?.let(onSelect) },
+            onZoomChanged = onZoomChanged,
+            modifier = modifier,
+        )
     } else {
         RadarMap(incidents, selectedId, fly, onSelect, onZoomChanged, modifier)
     }

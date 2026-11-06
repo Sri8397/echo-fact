@@ -39,9 +39,6 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Radar
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -63,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.just_sri.suvidha.radar.AppViewModel
 import com.just_sri.suvidha.radar.CATEGORIES
+import com.just_sri.suvidha.radar.RADAR_PROTOTYPE
 import com.just_sri.suvidha.radar.REGIONS
 import com.just_sri.suvidha.radar.RadarState
 import com.just_sri.suvidha.radar.data.Incident
@@ -81,12 +79,24 @@ fun RadarScreen(state: RadarState, model: AppViewModel) {
     val colors = LocalSuvidhaColors.current
     val visible: List<Incident> = state.visible
     var isMapFullScreen: Boolean by rememberSaveable { mutableStateOf(false) }
+    var isSignalFullScreen by rememberSaveable { mutableStateOf(false) }
+    val showingSignals = RADAR_PROTOTYPE && state.showSignals
     if (isMapFullScreen) {
         FullScreenMap(state, visible, model, onExit = { isMapFullScreen = false })
         return
     }
-    Column(modifier = Modifier.fillMaxSize().background(colors.canvas).statusBarsPadding()) {
-        RadarHeader(state, model)
+    val fullScreenGlobe = showingSignals && isSignalFullScreen
+    val screenModifier = Modifier.fillMaxSize().background(colors.canvas)
+    Column(modifier = if (fullScreenGlobe) screenModifier else screenModifier.statusBarsPadding()) {
+        if (!fullScreenGlobe) RadarHeader(state, model)
+        if (showingSignals) {
+            SignalRadarScreen(
+                expanded = isSignalFullScreen,
+                onExpandedChange = { isSignalFullScreen = it },
+                modifier = Modifier.weight(1f),
+            )
+            return@Column
+        }
         Column(
             modifier = Modifier.weight(1f).padding(horizontal = 12.dp).padding(bottom = 8.dp).navigationBarsPadding(),
             verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -173,14 +183,15 @@ private fun ZoomBadge(zoom: Double, modifier: Modifier) {
 private fun RadarHeader(state: RadarState, model: AppViewModel) {
     val colors = LocalSuvidhaColors.current
     var isSearchOpen: Boolean by rememberSaveable { mutableStateOf(state.query.isNotEmpty()) }
-    BackHandler(enabled = isSearchOpen) {
+    val showingSignals = RADAR_PROTOTYPE && state.showSignals
+    BackHandler(enabled = isSearchOpen && !showingSignals) {
         model.setQuery("")
         isSearchOpen = false
     }
     Column(modifier = Modifier.padding(horizontal = 12.dp).padding(top = 4.dp, bottom = 6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         // One header row: the title, or (while searching) the search field in its place.
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.heightIn(min = 56.dp)) {
-            if (isSearchOpen) {
+            if (isSearchOpen && !showingSignals) {
                 HeaderSearchField(
                     query = state.query,
                     onChange = model::setQuery,
@@ -201,17 +212,27 @@ private fun RadarHeader(state: RadarState, model: AppViewModel) {
                     Text("Suvidha", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = colors.ink)
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text("WORLD NEWS RADAR", fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, color = colors.green)
-                        Tag(if (state.isLive) "Live" else "Sample", if (state.isLive) colors.green else colors.accent)
+                        val dataLabel = if (showingSignals) "Prototype" else if (state.isLive) "Live" else "Sample"
+                        Tag(dataLabel, if (state.isLive && !showingSignals) colors.green else colors.accent)
                     }
                 }
-                IconButton(onClick = { isSearchOpen = true }) {
-                    Icon(Icons.Outlined.Search, contentDescription = "Search", tint = colors.muted)
+                if (!showingSignals) {
+                    IconButton(onClick = { isSearchOpen = true }) {
+                        Icon(Icons.Outlined.Search, contentDescription = "Search stories", tint = colors.muted)
+                    }
                 }
             }
             IconButton(onClick = model::openSettings) {
                 Icon(Icons.Outlined.Settings, contentDescription = "Settings", tint = colors.muted)
             }
         }
+        if (RADAR_PROTOTYPE) {
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                SelectChip("Globe radar", isSelected = showingSignals, onClick = { model.showSignals(true) })
+                SelectChip("Stories", isSelected = !showingSignals, onClick = { model.showSignals(false) })
+            }
+        }
+        if (showingSignals) return@Column
         LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             items(CATEGORIES) { (id, label) ->
                 SelectChip(label, isSelected = state.category == id, onClick = { model.setCategory(id) })

@@ -29,7 +29,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.just_sri.suvidha.radar.FlyTarget
-import com.just_sri.suvidha.radar.data.Incident
 import com.just_sri.suvidha.radar.ui.theme.LocalSuvidhaColors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -52,20 +51,22 @@ private const val TAP_RADIUS_DP: Int = 28
 private const val GRID_STEP: Int = 30
 private const val BASE_ZOOM: Double = 2.0
 
+data class GlobeMarker(val id: String, val lat: Double, val lng: Double, val color: Color? = null)
+
 /** One land outline, as longitude/latitude in radians. */
 private class LandRing(val lon: FloatArray, val lat: FloatArray)
 
 /**
  * Native 3D globe (orthographic projection on a Compose Canvas, Natural Earth 1:110m land).
- * Same inputs as [RadarMap]: drag to rotate, pinch to zoom, tap a beacon to open the story.
+ * Drag to rotate, pinch to zoom, and tap a beacon to select its marker.
  * No WebView and no network, so it draws the same on every device.
  */
 @Composable
 fun GlobeMap(
-    incidents: List<Incident>,
+    markers: List<GlobeMarker>,
     selectedId: String?,
     fly: FlyTarget,
-    onSelect: (Incident) -> Unit,
+    onSelect: (String) -> Unit,
     onZoomChanged: (Double) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -77,7 +78,7 @@ fun GlobeMap(
     val centerLat = remember { Animatable(20f) }
     var scale: Float by remember { mutableFloatStateOf(1f) }
     val scope = rememberCoroutineScope()
-    val currentIncidents by rememberUpdatedState(incidents)
+    val currentMarkers by rememberUpdatedState(markers)
     val currentOnSelect by rememberUpdatedState(onSelect)
     val currentOnZoom by rememberUpdatedState(onZoomChanged)
     val tapRadiusPx: Float = with(density) { TAP_RADIUS_DP.dp.toPx() }
@@ -116,10 +117,10 @@ fun GlobeMap(
                 detectTapGestures { tap ->
                     val projector = Projector(centerLon.value, centerLat.value, size.width / 2f, size.height / 2f, min(size.width, size.height) * GLOBE_FILL * scale)
                     val point = FloatArray(2)
-                    val hit: Incident? = currentIncidents
+                    val hit: GlobeMarker? = currentMarkers
                         .filter { projector.project(it.lng.toRadians(), it.lat.toRadians(), point) && hypot(point[0] - tap.x, point[1] - tap.y) <= tapRadiusPx }
                         .minByOrNull { projector.project(it.lng.toRadians(), it.lat.toRadians(), point); hypot(point[0] - tap.x, point[1] - tap.y) }
-                    if (hit != null) currentOnSelect(hit)
+                    if (hit != null) currentOnSelect(hit.id)
                 }
             },
     ) {
@@ -144,12 +145,12 @@ fun GlobeMap(
         }
         drawCircle(colors.green.copy(alpha = 0.35f), radius = radius, center = center, style = Stroke(width = 1.5.dp.toPx()))
         val point = FloatArray(2)
-        for (incident in incidents) {
-            if (!projector.project(incident.lng.toRadians(), incident.lat.toRadians(), point)) continue
-            val isSelected: Boolean = incident.id == selectedId
+        for (marker in markers) {
+            if (!projector.project(marker.lng.toRadians(), marker.lat.toRadians(), point)) continue
+            val isSelected: Boolean = marker.id == selectedId
             val spot = Offset(point[0], point[1])
             drawCircle(if (isSelected) colors.accent else colors.onGreen, radius = (if (isSelected) 12 else 9).dp.toPx(), center = spot)
-            drawCircle(colors.green, radius = (if (isSelected) 9 else 7).dp.toPx(), center = spot)
+            drawCircle(marker.color ?: colors.green, radius = (if (isSelected) 9 else 7).dp.toPx(), center = spot)
             drawCircle(colors.onGreen, radius = 2.5.dp.toPx(), center = spot)
         }
     }

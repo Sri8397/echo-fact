@@ -95,9 +95,10 @@ private fun RadarMarkerMapContent(
     val darkTileFilter = remember {
         ColorMatrixColorFilter(
             floatArrayOf(
-                -0.42f, 0f, 0f, 0f, 116f,
-                0f, -0.38f, 0f, 0f, 112f,
-                0f, 0f, -0.26f, 0f, 100f,
+                // Invert luminance into slate tones: pale land becomes navy, dark labels become bright.
+                -0.136064f, -0.457728f, -0.046208f, 0f, 170f,
+                -0.140316f, -0.472032f, -0.047652f, 0f, 184f,
+                -0.142442f, -0.479184f, -0.048374f, 0f, 205f,
                 0f, 0f, 0f, 1f, 0f,
             ),
         )

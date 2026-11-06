@@ -227,7 +227,11 @@ internal class EarthRenderer(context: Context) : GLSurfaceView.Renderer {
                 float atmosphereDist = length(p);
                 if (r2 > 1.0) {
                     float glow = exp(-max(0.0, atmosphereDist - 1.0) * 18.0) * (1.0 - smoothstep(1.0, 1.15, atmosphereDist));
-                    vec3 sky = uNight == 1 ? uBackground + uAtmosphere * 0.28 * glow : mix(uBackground, uAtmosphere, 0.18 * glow);
+                    // A broad, quiet sky gradient softens the day globe against the light UI.
+                    float skyFalloff = exp(-max(0.0, atmosphereDist - 1.0) * 2.4);
+                    float verticalTint = clamp(gl_FragCoord.y / uResolution.y, 0.0, 1.0);
+                    vec3 daySky = mix(uBackground, uAtmosphere, 0.055 + 0.10 * skyFalloff + 0.025 * verticalTint);
+                    vec3 sky = uNight == 1 ? uBackground + uAtmosphere * 0.28 * glow : daySky;
                     gl_FragColor = vec4(sky, 1.0);
                     return;
                 }

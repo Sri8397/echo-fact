@@ -34,6 +34,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
@@ -210,7 +211,11 @@ private fun SignalList(signals: List<RadarSignal>, activeId: String?, onSelect: 
 private fun SignalDetails(signal: RadarSignal, onClose: () -> Unit) {
     val colors = LocalSuvidhaColors.current
     val uriHandler = LocalUriHandler.current
-    ModalBottomSheet(onDismissRequest = onClose, containerColor = colors.cardSurface) {
+    ModalBottomSheet(
+        onDismissRequest = onClose,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = colors.cardSurface,
+    ) {
         Column(
             Modifier.verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 20.dp, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),

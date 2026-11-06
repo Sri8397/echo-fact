@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.just_sri.suvidha.radar.data.ApiException
+import com.just_sri.suvidha.radar.data.FALLBACK_INCIDENTS
 import com.just_sri.suvidha.radar.data.GENERIC_FAILURE
 import com.just_sri.suvidha.radar.data.Incident
 import com.just_sri.suvidha.radar.data.IncidentLoad
@@ -25,6 +26,9 @@ val REGIONS: List<Region> = listOf(
     Region("europe", "Europe", 50.0, 15.0, 4.0),
     Region("asia", "Asia-Pacific", 25.0, 105.0, 3.0),
 )
+
+// Keeps backend calls disabled for this prototype build.
+const val RADAR_PROTOTYPE: Boolean = true
 
 const val ALL_CATEGORIES: String = "all"
 
@@ -67,6 +71,7 @@ private const val PREFS_NAME: String = "suvidha_radar"
 private const val KEY_THEME: String = "theme"
 private const val KEY_COLOR_STYLE: String = "color_style"
 private const val KEY_GLOBE: String = "map_globe"
+private const val KEY_GLOBE_ROTATION: String = "globe_auto_rotate"
 
 enum class AdminTab(val label: String) { ADD_URL("Add story"), RECORDS("Stories"), PIPELINE("Find stories") }
 
@@ -134,8 +139,16 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val colorStyle: StateFlow<ColorStyle> = _colorStyle.asStateFlow()
 
     /** true = 3D globe, false = flat 2D map. */
-    private val _isGlobe = MutableStateFlow(prefs.getBoolean(KEY_GLOBE, false))
+    private val _isGlobe = MutableStateFlow(prefs.getBoolean(KEY_GLOBE, RADAR_PROTOTYPE))
     val isGlobe: StateFlow<Boolean> = _isGlobe.asStateFlow()
+
+    private val _globeAutoRotate = MutableStateFlow(prefs.getBoolean(KEY_GLOBE_ROTATION, true))
+    val globeAutoRotate: StateFlow<Boolean> = _globeAutoRotate.asStateFlow()
+
+    fun setGlobeAutoRotate(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_GLOBE_ROTATION, enabled).apply()
+        _globeAutoRotate.value = enabled
+    }
 
     fun setGlobe(isGlobe: Boolean) {
         prefs.edit().putBoolean(KEY_GLOBE, isGlobe).apply()
@@ -159,6 +172,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     // ---- radar ----
 
     fun refresh() {
+        if (RADAR_PROTOTYPE) {
+            _radar.update { it.copy(incidents = FALLBACK_INCIDENTS, isLive = false, isLoading = false) }
+            return
+        }
         _radar.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             val load: IncidentLoad = api.fetchIncidents()
@@ -234,6 +251,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     /** Opens the admin console (sign-in when signed out), optionally on a given tab. Back returns to Settings. */
     fun openAdmin(tab: AdminTab? = null) {
+        if (RADAR_PROTOTYPE) return
         _admin.update { it.copy(isSignedIn = api.isSignedIn(), tab = tab ?: it.tab) }
         _screen.value = Screen.ADMIN
     }

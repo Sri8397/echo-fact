@@ -1,0 +1,6 @@
+Earth at Night / Black Marble, 2016. NASA Earth Observatory.
+Source: https://science.nasa.gov/earth/earth-observatory/earth-at-night/maps/
+Image: https://assets.science.nasa.gov/content/dam/science/esd/eo/images/imagerecords/144000/144898/BlackMarble_2016_01deg.jpg
+Bundled 3600 x 1800 equirectangular composite; downsampled at runtime.
+Historical background imagery, not live radar observations.
+NASA imagery usage: https://www.nasa.gov/nasa-brand-center/images-and-media/

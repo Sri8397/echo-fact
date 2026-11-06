@@ -63,6 +63,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.just_sri.suvidha.radar.AppViewModel
 import com.just_sri.suvidha.radar.CATEGORIES
+import com.just_sri.suvidha.radar.RADAR_PROTOTYPE
 import com.just_sri.suvidha.radar.REGIONS
 import com.just_sri.suvidha.radar.RadarState
 import com.just_sri.suvidha.radar.data.Incident
@@ -78,6 +79,12 @@ private const val REGIONAL_VIEW_MAX: Double = 6.0
 
 @Composable
 fun RadarScreen(state: RadarState, model: AppViewModel) {
+    if (RADAR_PROTOTYPE) {
+        val isGlobe by model.isGlobe.collectAsStateWithLifecycle()
+        val autoRotate by model.globeAutoRotate.collectAsStateWithLifecycle()
+        PrototypeRadarScreen(stories = state.incidents, isGlobe = isGlobe, autoRotate = autoRotate, onOpenStory = model::openIncident, onOpenSettings = model::openSettings)
+        return
+    }
     val colors = LocalSuvidhaColors.current
     val visible: List<Incident> = state.visible
     var isMapFullScreen: Boolean by rememberSaveable { mutableStateOf(false) }
@@ -227,7 +234,7 @@ private fun RadarHeader(state: RadarState, model: AppViewModel) {
 
 /** Search field that sits in the header row in place of the title. Focuses itself when opened. */
 @Composable
-private fun HeaderSearchField(query: String, onChange: (String) -> Unit, onClose: () -> Unit, modifier: Modifier) {
+internal fun HeaderSearchField(query: String, onChange: (String) -> Unit, onClose: () -> Unit, modifier: Modifier, placeholder: String = "Search stories") {
     val colors = LocalSuvidhaColors.current
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { focus.requestFocus() }
@@ -235,7 +242,7 @@ private fun HeaderSearchField(query: String, onChange: (String) -> Unit, onClose
         value = query,
         onValueChange = onChange,
         singleLine = true,
-        placeholder = { Text("Search stories", fontSize = 14.sp, color = colors.muted) },
+        placeholder = { Text(placeholder, fontSize = 14.sp, color = colors.muted) },
         leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null, tint = colors.muted, modifier = Modifier.size(20.dp)) },
         trailingIcon = {
             IconButton(onClick = onClose) {
@@ -310,9 +317,10 @@ private fun StreamList(state: RadarState, visible: List<Incident>, model: AppVie
 }
 
 @Composable
-private fun StoryCard(incident: Incident, isSelected: Boolean, onClick: () -> Unit) {
+internal fun StoryCard(incident: Incident, isSelected: Boolean, onClick: () -> Unit, isRadarEntry: Boolean = false) {
     val colors = LocalSuvidhaColors.current
     EntryCard(onClick = onClick, isHighlighted = isSelected) {
+        if (isRadarEntry) Tag("Sample story", colors.ink)
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(incident.category.uppercase(), fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, color = colors.green, modifier = Modifier.weight(1f))
             Icon(Icons.Filled.CalendarToday, contentDescription = null, tint = colors.muted, modifier = Modifier.size(11.dp))

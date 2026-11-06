@@ -1,0 +1,126 @@
+package com.just_sri.suvidha.radar.data
+
+/** Available signal layers in the native layered radar prototype. */
+enum class RadarLayer(val label: String) {
+    SEISMIC("Seismic"),
+    WEATHER("Weather"),
+    MARITIME("Maritime"),
+}
+
+/** A fictional, static signal used to prototype native radar presentation. */
+data class RadarSignal(
+    val id: String,
+    val layer: RadarLayer,
+    val title: String,
+    val locationName: String,
+    val lat: Double,
+    val lng: Double,
+    val observedAt: String,
+    val severity: String,
+    val summary: String,
+)
+
+/** Static fictional signal data for prototyping native radar presentation. */
+object MockRadarApi {
+    fun signals(): List<RadarSignal> = listOf(
+        RadarSignal(
+            id = "mock-seismic-aleutians",
+            layer = RadarLayer.SEISMIC,
+            title = "Illustrative offshore tremor",
+            locationName = "Aleutian Islands, North Pacific",
+            lat = 52.4,
+            lng = -170.8,
+            observedAt = "2026-11-06 02:15 UTC",
+            severity = "Moderate",
+            summary = "Fictional prototype signal showing how a recent offshore tremor could appear on the seismic layer.",
+        ),
+        RadarSignal(
+            id = "mock-seismic-sunda",
+            layer = RadarLayer.SEISMIC,
+            title = "Illustrative regional earthquake",
+            locationName = "Sunda Strait, Indonesia",
+            lat = -6.2,
+            lng = 105.6,
+            observedAt = "2026-11-06 05:40 UTC",
+            severity = "Low",
+            summary = "Fictional sample for testing an event marker and concise seismic summary in Southeast Asia.",
+        ),
+        RadarSignal(
+            id = "mock-seismic-andes",
+            layer = RadarLayer.SEISMIC,
+            title = "Illustrative inland tremor",
+            locationName = "Atacama Region, Chile",
+            lat = -24.3,
+            lng = -69.2,
+            observedAt = "2026-11-06 08:05 UTC",
+            severity = "Elevated",
+            summary = "Fictional fixture for checking severity styling and map coverage along the Andes.",
+        ),
+        RadarSignal(
+            id = "mock-weather-caribbean",
+            layer = RadarLayer.WEATHER,
+            title = "Illustrative tropical rainfall band",
+            locationName = "Lesser Antilles, Caribbean Sea",
+            lat = 15.1,
+            lng = -61.4,
+            observedAt = "2026-11-06 03:00 UTC",
+            severity = "Moderate",
+            summary = "Fictional weather fixture representing a broad rain band for regional layer previews.",
+        ),
+        RadarSignal(
+            id = "mock-weather-bay-bengal",
+            layer = RadarLayer.WEATHER,
+            title = "Illustrative coastal wind alert",
+            locationName = "Odisha Coast, India",
+            lat = 19.8,
+            lng = 86.9,
+            observedAt = "2026-11-06 06:20 UTC",
+            severity = "High",
+            summary = "Fictional sample showing a coastal wind alert card and marker in the Bay of Bengal region.",
+        ),
+        RadarSignal(
+            id = "mock-weather-mediterranean",
+            layer = RadarLayer.WEATHER,
+            title = "Illustrative Mediterranean storm cell",
+            locationName = "Gulf of Lion, France",
+            lat = 42.7,
+            lng = 4.2,
+            observedAt = "2026-11-06 09:10 UTC",
+            severity = "Low",
+            summary = "Fictional fixture for testing weather layer density across a separate world region.",
+        ),
+        RadarSignal(
+            id = "mock-maritime-malacca",
+            layer = RadarLayer.MARITIME,
+            title = "Illustrative vessel traffic cluster",
+            locationName = "Strait of Malacca, Malaysia",
+            lat = 2.8,
+            lng = 101.4,
+            observedAt = "2026-11-06 01:35 UTC",
+            severity = "Busy",
+            summary = "Fictional traffic marker for prototyping maritime density and vessel activity summaries.",
+        ),
+        RadarSignal(
+            id = "mock-maritime-gibraltar",
+            layer = RadarLayer.MARITIME,
+            title = "Illustrative port approach activity",
+            locationName = "Strait of Gibraltar, Spain",
+            lat = 35.9,
+            lng = -5.7,
+            observedAt = "2026-11-06 04:55 UTC",
+            severity = "Steady",
+            summary = "Fictional sample showing a second major chokepoint in the maritime layer.",
+        ),
+        RadarSignal(
+            id = "mock-maritime-panamacan",
+            layer = RadarLayer.MARITIME,
+            title = "Illustrative canal transit queue",
+            locationName = "Panama Canal, Panama",
+            lat = 9.1,
+            lng = -79.7,
+            observedAt = "2026-11-06 10:25 UTC",
+            severity = "Busy",
+            summary = "Fictional fixture for testing maritime traffic markers in the Americas.",
+        ),
+    )
+}

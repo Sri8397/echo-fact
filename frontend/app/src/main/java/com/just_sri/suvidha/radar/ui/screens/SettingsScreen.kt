@@ -32,6 +32,8 @@ import androidx.compose.material.icons.outlined.CloudQueue
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.ListAlt
 import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,6 +41,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,6 +56,7 @@ import com.just_sri.suvidha.radar.AdminState
 import com.just_sri.suvidha.radar.AdminTab
 import com.just_sri.suvidha.radar.AppViewModel
 import com.just_sri.suvidha.radar.BuildConfig
+import com.just_sri.suvidha.radar.RADAR_PROTOTYPE
 import com.just_sri.suvidha.radar.ThemeChoice
 import com.just_sri.suvidha.radar.ui.components.Panel
 import androidx.compose.material.icons.outlined.Public
@@ -58,6 +64,10 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.platform.LocalContext
+import com.just_sri.suvidha.radar.data.MockRadarApi
+import com.just_sri.suvidha.radar.data.RadarSignal
+import com.just_sri.suvidha.radar.data.SavedRadarSignals
 import com.just_sri.suvidha.radar.ui.theme.ColorStyle
 import com.just_sri.suvidha.radar.ui.theme.LocalSuvidhaColors
 import com.just_sri.suvidha.radar.ui.theme.StylePalette
@@ -75,37 +85,112 @@ private val IconTileShape: RoundedCornerShape = RoundedCornerShape(12.dp)
 @Composable
 fun SettingsScreen(admin: AdminState, theme: ThemeChoice, storyCount: Int, isLive: Boolean, model: AppViewModel) {
     val colors = LocalSuvidhaColors.current
+    val context = LocalContext.current
+    SavedRadarSignals.initialize(context)
+    val savedIds by SavedRadarSignals.ids.collectAsStateWithLifecycle()
+    val savedSignals = remember(savedIds) {
+        MockRadarApi.signals().filter { it.id in savedIds }.sortedByDescending { it.observedAt }
+    }
+    var showSavedSignals by remember { mutableStateOf(false) }
+    var selectedSavedSignal by remember { mutableStateOf<RadarSignal?>(null) }
     val isGlobe: Boolean by model.isGlobe.collectAsStateWithLifecycle()
-    BackHandler(onBack = model::closeSettings)
-    SettingsPage("Settings", onBack = model::closeSettings) {
+    val globeAutoRotate: Boolean by model.globeAutoRotate.collectAsStateWithLifecycle()
+    val colorStyle: ColorStyle by model.colorStyle.collectAsStateWithLifecycle()
+    BackHandler(onBack = {
+        when {
+            selectedSavedSignal != null -> selectedSavedSignal = null
+            showSavedSignals -> showSavedSignals = false
+            else -> model.closeSettings()
+        }
+    })
+    if (showSavedSignals) {
+        SettingsPage("Saved radar signals", onBack = { showSavedSignals = false }) {
+            item { Text("Signals saved on this phone", fontSize = 13.sp, lineHeight = 20.sp, color = colors.muted) }
+            if (savedSignals.isEmpty()) {
+                item {
+                    Panel {
+                        Text("No saved radar signals yet", color = colors.ink, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(16.dp))
+                        Text("Use the bookmark in a signal's details to save it here.", color = colors.muted, fontSize = 13.sp, modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp))
+                    }
+                }
+            } else {
+                item {
+                    Panel {
+                        savedSignals.forEachIndexed { index, signal ->
+                            SettingsRow(
+                                title = signal.title,
+                                subtitle = "${signal.layer.label} · ${signal.locationName}",
+                                icon = Icons.Outlined.BookmarkBorder,
+                                onClick = { selectedSavedSignal = signal },
+                                divider = index < savedSignals.lastIndex,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        selectedSavedSignal?.let { signal -> SignalDetails(signal, onClose = { selectedSavedSignal = null }) }
+    } else SettingsPage("Settings", onBack = model::closeSettings) {
         item { SectionHeading("Appearance") }
         item {
             Panel {
-                SettingsRow("Theme", "${theme.title} · ${model.colorStyle.value.title}", Icons.Outlined.Palette, onClick = model::openTheme, divider = true)
-                SettingsRow(
-                    title = "3D globe",
-                    subtitle = if (isGlobe) "Map shows a 3D globe" else "Map shows a flat 2D view",
-                    icon = Icons.Outlined.Public,
-                    onClick = { model.setGlobe(!isGlobe) },
-                    trailing = {
-                        Switch(
-                            checked = isGlobe,
-                            onCheckedChange = { model.setGlobe(it) },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = colors.onGreen,
-                                checkedTrackColor = colors.green,
-                                uncheckedThumbColor = colors.cardSurface,
-                                uncheckedTrackColor = colors.borderLight,
-                                uncheckedBorderColor = Color.Transparent,
-                                checkedBorderColor = Color.Transparent,
-                            ),
-                        )
-                    },
-                    showChevron = false,
-                )
+                SettingsRow("Theme", "${theme.title} · ${colorStyle.title}", Icons.Outlined.Palette, onClick = model::openTheme)
             }
         }
-        if (admin.isSignedIn) {
+        item { SectionHeading("Map appearance") }
+        item {
+            Panel {
+                SettingsRow(
+                    title = "2D map",
+                    subtitle = "Flat map view",
+                    icon = Icons.Outlined.Map,
+                    onClick = { model.setGlobe(false) },
+                    trailing = { StyleRadio(!isGlobe) { model.setGlobe(false) } },
+                    showChevron = false,
+                    divider = true,
+                )
+                SettingsRow(
+                    title = "3D globe",
+                    subtitle = "Globe view",
+                    icon = Icons.Outlined.Public,
+                    onClick = { model.setGlobe(true) },
+                    trailing = { StyleRadio(isGlobe) { model.setGlobe(true) } },
+                    showChevron = false,
+                    divider = isGlobe,
+                )
+                if (isGlobe) {
+                    SettingsRow(
+                        title = "Globe rotation",
+                        subtitle = "Slow rotation when idle",
+                        icon = null,
+                        onClick = { model.setGlobeAutoRotate(!globeAutoRotate) },
+                        trailing = {
+                            Switch(
+                                checked = globeAutoRotate,
+                                onCheckedChange = model::setGlobeAutoRotate,
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = colors.onGreen,
+                                    checkedTrackColor = colors.green,
+                                    uncheckedThumbColor = colors.cardSurface,
+                                    uncheckedTrackColor = colors.borderLight,
+                                    uncheckedBorderColor = Color.Transparent,
+                                    checkedBorderColor = Color.Transparent,
+                                ),
+                            )
+                        },
+                        showChevron = false,
+                    )
+                }
+            }
+        }
+        if (RADAR_PROTOTYPE) {
+            item { SectionHeading("Data") }
+            item {
+                Panel {
+                    SettingsRow("Prototype mode", "Bundled signals and sample stories", Icons.Outlined.CloudQueue, showChevron = false)
+                }
+            }
+        } else if (admin.isSignedIn) {
             item { SectionHeading("Admin", detail = "Super admin") }
             item {
                 Panel {
@@ -122,14 +207,26 @@ fun SettingsScreen(admin: AdminState, theme: ThemeChoice, storyCount: Int, isLiv
                 }
             }
         }
+        item { SectionHeading("Saved") }
+        item {
+            Panel {
+                SettingsRow(
+                    title = "Saved radar signals",
+                    subtitle = if (savedSignals.isEmpty()) "No signals saved yet" else "${savedSignals.size} saved on this phone",
+                    icon = Icons.Outlined.BookmarkBorder,
+                    onClick = { showSavedSignals = true },
+                    divider = true,
+                )
+            }
+        }
         item { SectionHeading("About") }
         item {
             Panel {
-                SettingsRow("Version", null, Icons.Outlined.Info, trailingText = BuildConfig.VERSION_NAME, showChevron = false, divider = true)
-                SettingsRow("Server", if (isLive) "Connected" else "Offline, showing sample stories", Icons.Outlined.CloudQueue, trailingText = serverLabel(model.apiBaseUrl), showChevron = false)
+                SettingsRow("Version", null, Icons.Outlined.Info, trailingText = BuildConfig.VERSION_NAME, showChevron = false, divider = !RADAR_PROTOTYPE)
+                if (!RADAR_PROTOTYPE) SettingsRow("Server", if (isLive) "Connected" else "Offline, showing sample stories", Icons.Outlined.CloudQueue, trailingText = serverLabel(model.apiBaseUrl), showChevron = false)
             }
         }
-        if (admin.isSignedIn) {
+        if (!RADAR_PROTOTYPE && admin.isSignedIn) {
             item {
                 Panel {
                     SettingsRow("Sign out", null, Icons.AutoMirrored.Outlined.Logout, onClick = model::signOut, tint = colors.danger, showChevron = false)

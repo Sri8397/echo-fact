@@ -24,3 +24,6 @@ Thumbs.db
 
 # Database (optional local state)
 backend/data/*.db
+
+# Local Android screenshots
+suvidha-screenshots/

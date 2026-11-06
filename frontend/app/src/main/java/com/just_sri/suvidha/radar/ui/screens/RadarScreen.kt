@@ -80,7 +80,9 @@ private const val REGIONAL_VIEW_MAX: Double = 6.0
 @Composable
 fun RadarScreen(state: RadarState, model: AppViewModel) {
     if (RADAR_PROTOTYPE) {
-        PrototypeRadarScreen(stories = state.incidents, onOpenStory = model::openIncident, onOpenSettings = model::openSettings)
+        val isGlobe by model.isGlobe.collectAsStateWithLifecycle()
+        val autoRotate by model.globeAutoRotate.collectAsStateWithLifecycle()
+        PrototypeRadarScreen(stories = state.incidents, isGlobe = isGlobe, autoRotate = autoRotate, onOpenStory = model::openIncident, onOpenSettings = model::openSettings)
         return
     }
     val colors = LocalSuvidhaColors.current

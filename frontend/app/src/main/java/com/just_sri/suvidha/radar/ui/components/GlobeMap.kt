@@ -2,6 +2,7 @@ package com.just_sri.suvidha.radar.ui.components
 
 import android.content.Context
 import android.opengl.GLSurfaceView
+import android.os.SystemClock
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.DisposableEffect
@@ -20,6 +21,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -39,6 +43,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.just_sri.suvidha.radar.FlyTarget
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.isActive
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.hypot
@@ -66,14 +71,16 @@ fun GlobeMap(
     onSelect: (String) -> Unit,
     onZoomChanged: (Double) -> Unit,
     modifier: Modifier = Modifier,
+    autoRotate: Boolean = true,
 ) {
     val context: Context = LocalContext.current
     val colors = LocalSuvidhaColors.current
-    val spaceColor = if (colors.isDark) lerp(Color.Black, colors.green, 0.07f) else lerp(colors.canvas, colors.green, 0.10f)
+    val spaceColor = if (colors.isDark) lerp(Color.Black, colors.green, 0.07f) else Color(0xFFE1F0FC)
     val density = LocalDensity.current
     val centerLon = remember { Animatable(0f) }
     val centerLat = remember { Animatable(20f) }
     var scale: Float by remember { mutableFloatStateOf(1f) }
+    var idleUntil by remember { mutableLongStateOf(SystemClock.uptimeMillis() + 2500L) }
     val scope = rememberCoroutineScope()
     val currentMarkers by rememberUpdatedState(markers)
     val currentOnSelect by rememberUpdatedState(onSelect)
@@ -83,6 +90,7 @@ fun GlobeMap(
     LaunchedEffect(Unit) { currentOnZoom(BASE_ZOOM) }
     LaunchedEffect(fly.sequence) {
         if (fly.sequence == 0L) return@LaunchedEffect
+        idleUntil = SystemClock.uptimeMillis() + FLY_MILLIS + 3500L
         val targetScale: Float = 2.0.pow(fly.zoom - BASE_ZOOM).toFloat().coerceIn(1f, MAX_SCALE)
         launch { centerLon.animateTo(nearestLongitude(centerLon.value, fly.lng.toFloat()), tween(FLY_MILLIS)) }
         launch { centerLat.animateTo(fly.lat.toFloat().coerceIn(-MAX_TILT, MAX_TILT), tween(FLY_MILLIS)) }
@@ -100,11 +108,27 @@ fun GlobeMap(
         }
     }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
+    var resumed by remember(lifecycle) { mutableStateOf(lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) }
+    LaunchedEffect(autoRotate, resumed) {
+        if (!autoRotate || !resumed) return@LaunchedEffect
+        var previousFrame = withFrameNanos { it }
+        while (isActive) {
+            val now = withFrameNanos { it }
+            val elapsed = now - previousFrame
+            if (elapsed < 33_000_000L) continue // Cap gentle idle motion at approximately 30 fps.
+            previousFrame = now
+            if (SystemClock.uptimeMillis() >= idleUntil && !centerLon.isRunning) {
+                // Move the viewing longitude west: Earth turns east around its geographic axis.
+                val step = 0.8f * (elapsed / 1_000_000_000f).coerceAtMost(0.1f)
+                centerLon.snapTo(((centerLon.value - step + 180f) % 360f + 360f) % 360f - 180f)
+            }
+        }
+    }
     DisposableEffect(surface, lifecycle) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_RESUME -> { surface.onResume(); surface.requestRender() }
-                Lifecycle.Event.ON_PAUSE -> surface.onPause()
+                Lifecycle.Event.ON_RESUME -> { resumed = true; idleUntil = SystemClock.uptimeMillis() + 2500L; surface.onResume(); surface.requestRender() }
+                Lifecycle.Event.ON_PAUSE -> { resumed = false; surface.onPause() }
                 else -> Unit
             }
         }
@@ -117,7 +141,7 @@ fun GlobeMap(
     val renderedScale = scale
     SideEffect {
         renderer.updateCamera(renderedLongitude, renderedLatitude, renderedScale)
-        renderer.updateStyle(spaceColor.toArgb(), colors.green.toArgb(), colors.isDark)
+        renderer.updateStyle(spaceColor.toArgb(), (if (colors.isDark) colors.green else Color(0xFF75B9EA)).toArgb(), colors.isDark)
         surface.requestRender()
     }
     Box(modifier.background(spaceColor)) {
@@ -126,6 +150,7 @@ fun GlobeMap(
             modifier = Modifier.matchParentSize()
                 .pointerInput(Unit) {
                     detectTransformGestures { _, pan, zoom, _ ->
+                        idleUntil = SystemClock.uptimeMillis() + 3500L
                         val radius: Float = min(size.width, size.height) * GLOBE_FILL * scale
                         val degreesPerPx: Float = (180f / PI.toFloat()) / radius
                         scale = (scale * zoom).coerceIn(1f, MAX_SCALE)
@@ -138,6 +163,7 @@ fun GlobeMap(
                 }
                 .pointerInput(Unit) {
                     detectTapGestures { tap ->
+                        idleUntil = SystemClock.uptimeMillis() + 3500L
                         val projector = GlobeProjector(centerLon.value, centerLat.value, size.width / 2f, size.height / 2f, min(size.width, size.height) * GLOBE_FILL * scale)
                         val point = FloatArray(2)
                         val hit: GlobeMarker? = currentMarkers

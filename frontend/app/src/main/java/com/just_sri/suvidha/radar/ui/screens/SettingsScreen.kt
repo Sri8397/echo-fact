@@ -33,6 +33,7 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.ListAlt
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -93,6 +94,7 @@ fun SettingsScreen(admin: AdminState, theme: ThemeChoice, storyCount: Int, isLiv
     var showSavedSignals by remember { mutableStateOf(false) }
     var selectedSavedSignal by remember { mutableStateOf<RadarSignal?>(null) }
     val isGlobe: Boolean by model.isGlobe.collectAsStateWithLifecycle()
+    val globeAutoRotate: Boolean by model.globeAutoRotate.collectAsStateWithLifecycle()
     val colorStyle: ColorStyle by model.colorStyle.collectAsStateWithLifecycle()
     BackHandler(onBack = {
         when {
@@ -132,17 +134,40 @@ fun SettingsScreen(admin: AdminState, theme: ThemeChoice, storyCount: Int, isLiv
         item { SectionHeading("Appearance") }
         item {
             Panel {
-                SettingsRow("Theme", "${theme.title} · ${colorStyle.title}", Icons.Outlined.Palette, onClick = model::openTheme, divider = !RADAR_PROTOTYPE)
-                if (!RADAR_PROTOTYPE) {
+                SettingsRow("Theme", "${theme.title} · ${colorStyle.title}", Icons.Outlined.Palette, onClick = model::openTheme)
+            }
+        }
+        item { SectionHeading("Map appearance") }
+        item {
+            Panel {
+                SettingsRow(
+                    title = "2D map",
+                    subtitle = "Flat map view",
+                    icon = Icons.Outlined.Map,
+                    onClick = { model.setGlobe(false) },
+                    trailing = { StyleRadio(!isGlobe) { model.setGlobe(false) } },
+                    showChevron = false,
+                    divider = true,
+                )
+                SettingsRow(
+                    title = "3D globe",
+                    subtitle = "Globe view",
+                    icon = Icons.Outlined.Public,
+                    onClick = { model.setGlobe(true) },
+                    trailing = { StyleRadio(isGlobe) { model.setGlobe(true) } },
+                    showChevron = false,
+                    divider = isGlobe,
+                )
+                if (isGlobe) {
                     SettingsRow(
-                        title = "3D globe",
-                        subtitle = if (isGlobe) "Map shows a 3D globe" else "Map shows a flat 2D view",
-                        icon = Icons.Outlined.Public,
-                        onClick = { model.setGlobe(!isGlobe) },
+                        title = "Globe rotation",
+                        subtitle = "Slow rotation when idle",
+                        icon = null,
+                        onClick = { model.setGlobeAutoRotate(!globeAutoRotate) },
                         trailing = {
                             Switch(
-                                checked = isGlobe,
-                                onCheckedChange = { model.setGlobe(it) },
+                                checked = globeAutoRotate,
+                                onCheckedChange = model::setGlobeAutoRotate,
                                 colors = SwitchDefaults.colors(
                                     checkedThumbColor = colors.onGreen,
                                     checkedTrackColor = colors.green,

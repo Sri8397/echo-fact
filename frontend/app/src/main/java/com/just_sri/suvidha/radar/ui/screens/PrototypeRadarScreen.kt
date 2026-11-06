@@ -84,6 +84,8 @@ import com.just_sri.suvidha.radar.ui.theme.SuvidhaColors
 @Composable
 internal fun PrototypeRadarScreen(
     stories: List<Incident>,
+    isGlobe: Boolean,
+    autoRotate: Boolean,
     onOpenStory: (Incident) -> Unit,
     onOpenSettings: () -> Unit,
 ) {
@@ -96,8 +98,9 @@ internal fun PrototypeRadarScreen(
     var regionId by rememberSaveable { mutableStateOf(REGIONS.first().id) }
     var activeId by rememberSaveable { mutableStateOf<String?>(null) }
     var detailId by rememberSaveable { mutableStateOf<String?>(null) }
-    var flatMode by rememberSaveable { mutableStateOf(false) }
+    val flatMode = !isGlobe
     val currentFlatMode = rememberUpdatedState(flatMode)
+    val currentAutoRotate = rememberUpdatedState(autoRotate)
     var expanded by rememberSaveable { mutableStateOf(false) }
     var mapVisible by rememberSaveable { mutableStateOf(true) }
     var cameraRequest by rememberSaveable { mutableStateOf(0L) }
@@ -154,7 +157,7 @@ internal fun PrototypeRadarScreen(
             if (currentFlatMode.value) {
                 RadarMarkerMap(points, selection, target, onSelect, onZoomChanged = {}, modifier = Modifier.fillMaxSize())
             } else {
-                GlobeMap(points, selection, target, onSelect, onZoomChanged = {}, modifier = Modifier.fillMaxSize())
+                GlobeMap(points, selection, target, onSelect, onZoomChanged = {}, modifier = Modifier.fillMaxSize(), autoRotate = currentAutoRotate.value)
             }
         }
     }
@@ -167,7 +170,7 @@ internal fun PrototypeRadarScreen(
         Box(Modifier.fillMaxSize().background(colors.canvas)) {
             globeMap(markers, activeId, fly, showEntry)
             Box(Modifier.fillMaxSize().safeDrawingPadding().padding(12.dp)) {
-                MapModeSwitch(flatMode, { flatMode = it }, Modifier.align(Alignment.TopStart))
+                MapTitle(flatMode, Modifier.align(Alignment.TopStart))
                 MapCredit(flatMode, Modifier.align(Alignment.BottomEnd))
                 GlobeControls(true, { expanded = false }, resetCamera, hideMap, Modifier.align(Alignment.TopEnd))
                 Surface(shape = RoundedCornerShape(10.dp), color = colors.cardSurface, modifier = Modifier.align(Alignment.BottomStart)) {
@@ -227,7 +230,7 @@ internal fun PrototypeRadarScreen(
                     ) {
                         Box {
                             globeMap(markers, activeId, fly, showEntry)
-                            MapModeSwitch(flatMode, { flatMode = it }, Modifier.align(Alignment.TopStart).padding(8.dp))
+                            MapTitle(flatMode, Modifier.align(Alignment.TopStart).padding(8.dp))
                             GlobeControls(false, { expanded = true }, resetCamera, hideMap, Modifier.align(Alignment.TopEnd).padding(4.dp))
                             MapCredit(flatMode, Modifier.align(Alignment.BottomEnd).padding(6.dp))
                         }
@@ -274,22 +277,10 @@ private fun RadarFilterChip(filter: RadarFeedFilter, selected: Boolean, onClick:
 }
 
 @Composable
-private fun MapModeSwitch(flatMode: Boolean, onChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
+private fun MapTitle(flatMode: Boolean, modifier: Modifier) {
     val colors = LocalSuvidhaColors.current
-    Row(modifier.background(colors.cardSurface.copy(alpha = 0.94f), RoundedCornerShape(10.dp))) {
-        listOf(true to "2D", false to "3D").forEach { (flat, label) ->
-            Surface(
-                selected = flatMode == flat,
-                onClick = { onChange(flat) },
-                shape = RoundedCornerShape(8.dp),
-                color = if (flatMode == flat) colors.mint else Color.Transparent,
-                modifier = Modifier.heightIn(min = 40.dp),
-            ) {
-                Box(Modifier.padding(horizontal = 14.dp), contentAlignment = Alignment.Center) {
-                    Text(label, color = if (flatMode == flat) colors.green else colors.muted, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-        }
+    Surface(modifier = modifier, shape = RoundedCornerShape(8.dp), color = colors.cardSurface.copy(alpha = 0.9f)) {
+        Text(if (flatMode) "2D MAP" else "3D GLOBE", color = colors.green, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(10.dp))
     }
 }
 

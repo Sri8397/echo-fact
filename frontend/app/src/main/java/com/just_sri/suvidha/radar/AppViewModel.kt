@@ -71,6 +71,7 @@ private const val PREFS_NAME: String = "suvidha_radar"
 private const val KEY_THEME: String = "theme"
 private const val KEY_COLOR_STYLE: String = "color_style"
 private const val KEY_GLOBE: String = "map_globe"
+private const val KEY_GLOBE_ROTATION: String = "globe_auto_rotate"
 
 enum class AdminTab(val label: String) { ADD_URL("Add story"), RECORDS("Stories"), PIPELINE("Find stories") }
 
@@ -138,8 +139,16 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val colorStyle: StateFlow<ColorStyle> = _colorStyle.asStateFlow()
 
     /** true = 3D globe, false = flat 2D map. */
-    private val _isGlobe = MutableStateFlow(RADAR_PROTOTYPE || prefs.getBoolean(KEY_GLOBE, false))
+    private val _isGlobe = MutableStateFlow(prefs.getBoolean(KEY_GLOBE, RADAR_PROTOTYPE))
     val isGlobe: StateFlow<Boolean> = _isGlobe.asStateFlow()
+
+    private val _globeAutoRotate = MutableStateFlow(prefs.getBoolean(KEY_GLOBE_ROTATION, true))
+    val globeAutoRotate: StateFlow<Boolean> = _globeAutoRotate.asStateFlow()
+
+    fun setGlobeAutoRotate(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_GLOBE_ROTATION, enabled).apply()
+        _globeAutoRotate.value = enabled
+    }
 
     fun setGlobe(isGlobe: Boolean) {
         prefs.edit().putBoolean(KEY_GLOBE, isGlobe).apply()

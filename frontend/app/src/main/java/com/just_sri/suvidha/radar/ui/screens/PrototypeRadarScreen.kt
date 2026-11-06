@@ -30,6 +30,9 @@ import androidx.compose.material.icons.outlined.CenterFocusStrong
 import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.outlined.FullscreenExit
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.VisibilityOff
+import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material3.TextButton
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -84,6 +87,7 @@ internal fun PrototypeRadarScreen(
     var activeId by rememberSaveable { mutableStateOf<String?>(null) }
     var detailId by rememberSaveable { mutableStateOf<String?>(null) }
     var expanded by rememberSaveable { mutableStateOf(false) }
+    var mapVisible by rememberSaveable { mutableStateOf(true) }
     var cameraRequest by rememberSaveable { mutableStateOf(0L) }
     val visible = remember(stories, signals, filter, query) {
         val term = query.trim()
@@ -138,12 +142,16 @@ internal fun PrototypeRadarScreen(
             GlobeMap(points, selection, target, onSelect, onZoomChanged = {}, modifier = Modifier.fillMaxSize())
         }
     }
+    val hideMap: () -> Unit = {
+        expanded = false
+        mapVisible = false
+    }
     BackHandler(enabled = expanded) { expanded = false }
     if (expanded) {
         Box(Modifier.fillMaxSize().background(colors.canvas)) {
             globeMap(markers, activeId, fly, showEntry)
             Box(Modifier.fillMaxSize().safeDrawingPadding().padding(12.dp)) {
-                GlobeControls(true, { expanded = false }, resetCamera, Modifier.align(Alignment.TopEnd))
+                GlobeControls(true, { expanded = false }, resetCamera, hideMap, Modifier.align(Alignment.TopEnd))
                 Surface(shape = RoundedCornerShape(10.dp), color = colors.cardSurface, modifier = Modifier.align(Alignment.BottomStart)) {
                     Text(countLabel, color = colors.muted, fontSize = 12.sp, modifier = Modifier.padding(10.dp))
                 }
@@ -170,17 +178,24 @@ internal fun PrototypeRadarScreen(
                     )
                 }
             }
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                items(REGIONS, key = { it.id }) { preset ->
-                    FilterChip(
-                        selected = regionId == preset.id,
-                        onClick = {
-                            regionId = preset.id
-                            activeId = null
-                            cameraRequest++
-                        },
-                        label = { Text(preset.label, fontSize = 12.sp) },
-                    )
+            if (mapVisible) {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    items(REGIONS, key = { it.id }) { preset ->
+                        FilterChip(
+                            selected = regionId == preset.id,
+                            onClick = {
+                                regionId = preset.id
+                                activeId = null
+                                cameraRequest++
+                            },
+                            label = { Text(preset.label, fontSize = 12.sp) },
+                        )
+                    }
+                }
+            } else {
+                TextButton(onClick = { mapVisible = true }) {
+                    Icon(Icons.Outlined.Public, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Text("Show map", modifier = Modifier.padding(start = 8.dp))
                 }
             }
             BoxWithConstraints(Modifier.weight(1f)) {
@@ -195,12 +210,14 @@ internal fun PrototypeRadarScreen(
                         Box {
                             globeMap(markers, activeId, fly, showEntry)
                             Text("3D GLOBE", color = colors.muted, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.TopStart).padding(12.dp))
-                            GlobeControls(false, { expanded = true }, resetCamera, Modifier.align(Alignment.TopEnd).padding(4.dp))
+                            GlobeControls(false, { expanded = true }, resetCamera, hideMap, Modifier.align(Alignment.TopEnd).padding(4.dp))
                             Text("Drag to rotate  ·  Pinch to zoom", color = colors.muted, fontSize = 11.sp, modifier = Modifier.align(Alignment.BottomCenter).padding(10.dp))
                         }
                     }
                 }
-                if (sideBySide) {
+                if (!mapVisible) {
+                    RadarFeedList(visible, activeId, countLabel, showEntry, Modifier.fillMaxSize())
+                } else if (sideBySide) {
                     Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         globe(Modifier.weight(1f).fillMaxSize())
                         RadarFeedList(visible, activeId, countLabel, showEntry, Modifier.weight(1f).fillMaxSize())
@@ -239,10 +256,13 @@ private fun RadarFilterChip(filter: RadarFeedFilter, selected: Boolean, onClick:
 }
 
 @Composable
-private fun GlobeControls(expanded: Boolean, onExpand: () -> Unit, onReset: () -> Unit, modifier: Modifier) {
+private fun GlobeControls(expanded: Boolean, onExpand: () -> Unit, onReset: () -> Unit, onHide: () -> Unit, modifier: Modifier) {
     val colors = LocalSuvidhaColors.current
     Surface(modifier = modifier, shape = RoundedCornerShape(12.dp), color = colors.cardSurface.copy(alpha = 0.9f)) {
         Row {
+            IconButton(onClick = onHide) {
+                Icon(Icons.Outlined.VisibilityOff, contentDescription = "Hide map", tint = colors.ink)
+            }
             IconButton(onClick = onReset) {
                 Icon(Icons.Outlined.CenterFocusStrong, contentDescription = "Reset globe", tint = colors.ink)
             }

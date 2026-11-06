@@ -120,7 +120,7 @@ internal fun PrototypeRadarScreen(
         visible.map {
             val color = when (it) {
                 is RadarEntry.Signal -> it.signal.layer.color(colors)
-                is RadarEntry.Story -> if (flatMode) colors.ink else Color(0xFFE8F2F5)
+                is RadarEntry.Story -> if (flatMode || !colors.isDark) colors.ink else Color(0xFFE8F2F5)
             }
             GlobeMarker(it.id, it.lat, it.lng, color)
         }
@@ -299,10 +299,14 @@ private fun MapCredit(flatMode: Boolean, modifier: Modifier = Modifier) {
     val uri = LocalUriHandler.current
     Surface(modifier = modifier, shape = RoundedCornerShape(6.dp), color = colors.cardSurface.copy(alpha = 0.94f)) {
         Text(
-            if (flatMode) "© OpenStreetMap contributors" else "NASA Black Marble · 2016",
+            if (flatMode) "© OpenStreetMap contributors" else if (colors.isDark) "NASA Black Marble · 2016" else "NASA Blue Marble · 2004",
             color = colors.muted, fontSize = 9.sp,
             modifier = Modifier.clickable {
-                uri.openUri(if (flatMode) "https://www.openstreetmap.org/copyright" else "https://science.nasa.gov/earth/earth-observatory/earth-at-night/maps/")
+                uri.openUri(when {
+                    flatMode -> "https://www.openstreetmap.org/copyright"
+                    colors.isDark -> "https://science.nasa.gov/earth/earth-observatory/earth-at-night/maps/"
+                    else -> "https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-map/"
+                })
             }.padding(horizontal = 8.dp, vertical = 5.dp),
         )
     }

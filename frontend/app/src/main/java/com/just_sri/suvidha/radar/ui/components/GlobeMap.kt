@@ -69,7 +69,7 @@ fun GlobeMap(
 ) {
     val context: Context = LocalContext.current
     val colors = LocalSuvidhaColors.current
-    val spaceColor = lerp(Color.Black, colors.green, if (colors.isDark) 0.07f else 0.13f)
+    val spaceColor = if (colors.isDark) lerp(Color.Black, colors.green, 0.07f) else colors.canvas
     val density = LocalDensity.current
     val centerLon = remember { Animatable(0f) }
     val centerLat = remember { Animatable(20f) }

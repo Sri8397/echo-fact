@@ -2,6 +2,7 @@ package com.just_sri.suvidha.radar.ui.components
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
@@ -91,6 +92,16 @@ private fun RadarMarkerMapContent(
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val currentOnZoom = rememberUpdatedState(onZoomChanged)
     val currentOnSelect = rememberUpdatedState(onSelect)
+    val darkTileFilter = remember {
+        ColorMatrixColorFilter(
+            floatArrayOf(
+                -0.42f, 0f, 0f, 0f, 116f,
+                0f, -0.38f, 0f, 0f, 112f,
+                0f, 0f, -0.26f, 0f, 100f,
+                0f, 0f, 0f, 1f, 0f,
+            ),
+        )
+    }
     val mapView: MapView = remember(context) { createMap(context) { currentOnZoom.value(it) } }
 
     DisposableEffect(mapView, lifecycle) {
@@ -118,6 +129,8 @@ private fun RadarMarkerMapContent(
         factory = { mapView },
         modifier = modifier,
         update = { view ->
+            // TilesOverlay filters only the base map; marker overlays retain their palette colors.
+            view.overlayManager.tilesOverlay.setColorFilter(if (colors.isDark) darkTileFilter else null)
             view.overlays.removeAll { it is Marker }
             for (mapMarker in markers) {
                 val isSelected = mapMarker.id == selectedId

@@ -25,20 +25,21 @@ internal class EarthRenderer(context: Context) : GLSurfaceView.Renderer {
 
     @Volatile private var surfaceWidth: Int = 1
     @Volatile private var surfaceHeight: Int = 1
-    private data class Style(val background: FloatArray, val atmosphere: FloatArray, val brightness: Float)
-    @Volatile private var style = Style(floatArrayOf(.012f, .025f, .035f), floatArrayOf(.1f, .8f, .65f), 1f)
+    private data class Style(val background: FloatArray, val atmosphere: FloatArray, val brightness: Float, val dark: Boolean)
+    @Volatile private var style = Style(floatArrayOf(.012f, .025f, .035f), floatArrayOf(.1f, .8f, .65f), 1f, true)
     private var backgroundLocation = -1
     private var atmosphereLocation = -1
     private var brightnessLocation = -1
+    private var nightLocation = -1
 
     fun updateStyle(background: Int, atmosphere: Int, dark: Boolean) {
         fun rgb(value: Int) = floatArrayOf(android.graphics.Color.red(value) / 255f, android.graphics.Color.green(value) / 255f, android.graphics.Color.blue(value) / 255f)
-        style = Style(rgb(background), rgb(atmosphere), if (dark) .95f else 1.08f)
+        style = Style(rgb(background), rgb(atmosphere), if (dark) .95f else 1.08f, dark)
     }
 
     private var program: Int = 0
-    private var texture: Int = 0
-    private var hasTexture: Boolean = false
+    private var nightTexture: Int = 0
+    private var dayTexture: Int = 0
     private var positionLocation: Int = -1
     private var resolutionLocation: Int = -1
     private var radiusLocation: Int = -1
@@ -92,8 +93,9 @@ internal class EarthRenderer(context: Context) : GLSurfaceView.Renderer {
         backgroundLocation = GLES20.glGetUniformLocation(program, "uBackground")
         atmosphereLocation = GLES20.glGetUniformLocation(program, "uAtmosphere")
         brightnessLocation = GLES20.glGetUniformLocation(program, "uBrightness")
-        texture = loadEarthTexture()
-        hasTexture = texture != 0
+        nightLocation = GLES20.glGetUniformLocation(program, "uNight")
+        nightTexture = loadEarthTexture("earth_night.jpg")
+        dayTexture = loadEarthTexture("earth_day.jpg")
     }
 
     override fun onSurfaceChanged(unused: GL10?, width: Int, height: Int) {
@@ -110,9 +112,12 @@ internal class EarthRenderer(context: Context) : GLSurfaceView.Renderer {
         val radius = min(surfaceWidth, surfaceHeight) * 0.44f * pose.scale
         GLES20.glUseProgram(program)
         val appearance = style
+        val texture = if (appearance.dark) nightTexture else dayTexture
+        val hasTexture = texture != 0
         GLES20.glUniform3fv(backgroundLocation, 1, appearance.background, 0)
         GLES20.glUniform3fv(atmosphereLocation, 1, appearance.atmosphere, 0)
         GLES20.glUniform1f(brightnessLocation, appearance.brightness)
+        GLES20.glUniform1i(nightLocation, if (appearance.dark) 1 else 0)
         quad.position(0)
         GLES20.glEnableVertexAttribArray(positionLocation)
         GLES20.glVertexAttribPointer(positionLocation, 2, GLES20.GL_FLOAT, false, 0, quad)
@@ -127,17 +132,17 @@ internal class EarthRenderer(context: Context) : GLSurfaceView.Renderer {
         GLES20.glDisableVertexAttribArray(positionLocation)
     }
 
-    private fun loadEarthTexture(): Int {
+    private fun loadEarthTexture(asset: String): Int {
         val bitmap = try {
             val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-            appContext.assets.open(EARTH_ASSET).use { BitmapFactory.decodeStream(it, null, bounds) }
+            appContext.assets.open(asset).use { BitmapFactory.decodeStream(it, null, bounds) }
             val maxTextureSize = IntArray(1)
             GLES20.glGetIntegerv(GLES20.GL_MAX_TEXTURE_SIZE, maxTextureSize, 0)
             val targetSize = min(MAX_DECODE_SIZE, maxTextureSize[0].coerceAtLeast(1))
             var sampleSize = 1
             while (max(bounds.outWidth, bounds.outHeight) / sampleSize > targetSize) sampleSize *= 2
             val decodeOptions = BitmapFactory.Options().apply { inSampleSize = sampleSize }
-            appContext.assets.open(EARTH_ASSET).use { BitmapFactory.decodeStream(it, null, decodeOptions) }
+            appContext.assets.open(asset).use { BitmapFactory.decodeStream(it, null, decodeOptions) }
         } catch (error: Exception) {
             Log.w(TAG, "Earth texture unavailable; using procedural globe", error)
             null
@@ -183,7 +188,6 @@ internal class EarthRenderer(context: Context) : GLSurfaceView.Renderer {
 
     private companion object {
         const val TAG = "EarthRenderer"
-        const val EARTH_ASSET = "earth_night.jpg"
         const val FLOAT_BYTES = 4
         const val MAX_DECODE_SIZE = 2048
         val QUAD = floatArrayOf(-1f, -1f, 1f, -1f, -1f, 1f, 1f, 1f)
@@ -203,6 +207,7 @@ internal class EarthRenderer(context: Context) : GLSurfaceView.Renderer {
             uniform vec3 uBackground;
             uniform vec3 uAtmosphere;
             uniform float uBrightness;
+            uniform int uNight;
 
             const float PI = 3.14159265358979323846;
 
@@ -222,7 +227,8 @@ internal class EarthRenderer(context: Context) : GLSurfaceView.Renderer {
                 float atmosphereDist = length(p);
                 if (r2 > 1.0) {
                     float glow = exp(-max(0.0, atmosphereDist - 1.0) * 18.0) * (1.0 - smoothstep(1.0, 1.15, atmosphereDist));
-                    gl_FragColor = vec4(uBackground + uAtmosphere * 0.28 * glow, 1.0);
+                    vec3 sky = uNight == 1 ? uBackground + uAtmosphere * 0.28 * glow : mix(uBackground, uAtmosphere, 0.18 * glow);
+                    gl_FragColor = vec4(sky, 1.0);
                     return;
                 }
                 float z = sqrt(max(0.0, 1.0 - r2));
@@ -234,7 +240,7 @@ internal class EarthRenderer(context: Context) : GLSurfaceView.Renderer {
                 float lon = uCamera.x + deltaLon;
                 vec2 uv = vec2(fract(lon / (2.0 * PI) + 0.5), 0.5 - lat / PI);
                 float edge = smoothstep(0.0, 0.12, z);
-                float limbShade = 0.48 + 0.52 * sqrt(z);
+                float limbShade = uNight == 1 ? 0.48 + 0.52 * sqrt(z) : 0.68 + 0.32 * sqrt(z);
                 vec3 color;
                 if (uHasTexture == 1) {
                     color = texture2D(uEarth, uv).rgb;

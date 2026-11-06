@@ -84,7 +84,6 @@ data class RadarState(
     val incidents: List<Incident> = emptyList(),
     val isLive: Boolean = false,
     val isLoading: Boolean = true,
-    val showSignals: Boolean = true,
     val query: String = "",
     val category: String = ALL_CATEGORIES,
     val regionId: String = "world",
@@ -176,10 +175,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 state.copy(incidents = load.incidents, isLive = load.isLive, isLoading = false, selectedId = keepSelection)
             }
         }
-    }
-
-    fun showSignals(show: Boolean) {
-        _radar.update { it.copy(showSignals = show) }
     }
 
     fun setQuery(query: String) {

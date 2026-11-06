@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -53,9 +54,10 @@ fun SuvidhaRadarApp(model: AppViewModel) {
     val admin: AdminState by model.admin.collectAsStateWithLifecycle()
     val toast: Toast? by model.toast.collectAsStateWithLifecycle()
     val theme: ThemeChoice by model.theme.collectAsStateWithLifecycle()
+    val radarStateHolder = rememberSaveableStateHolder()
     Box(modifier = Modifier.fillMaxSize()) {
         when (screen) {
-            Screen.RADAR -> RadarScreen(radar, model)
+            Screen.RADAR -> radarStateHolder.SaveableStateProvider(Screen.RADAR.name) { RadarScreen(radar, model) }
             Screen.DETAIL -> DetailScreen(radar.selected, onBack = model::closeDetail, onOpenSection = model::openSection)
             Screen.SECTION -> StorySectionScreen(radar.selected, model.section.collectAsStateWithLifecycle().value, onBack = model::closeSection)
             Screen.SETTINGS -> SettingsScreen(admin, theme, radar.incidents.size, radar.isLive, model)

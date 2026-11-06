@@ -3,6 +3,7 @@ package com.just_sri.suvidha.radar.ui.screens
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -74,7 +75,7 @@ import com.just_sri.suvidha.radar.data.radarFeed
 import com.just_sri.suvidha.radar.data.sourceReferences
 import com.just_sri.suvidha.radar.ui.components.EntryCard
 import com.just_sri.suvidha.radar.ui.components.GlobeMap
-import com.just_sri.suvidha.radar.ui.components.FlatRadarMap
+import com.just_sri.suvidha.radar.ui.components.RadarMarkerMap
 import com.just_sri.suvidha.radar.ui.components.GlobeMarker
 import com.just_sri.suvidha.radar.ui.components.Tag
 import com.just_sri.suvidha.radar.ui.theme.LocalSuvidhaColors
@@ -115,11 +116,11 @@ internal fun PrototypeRadarScreen(
     val region = REGIONS.first { it.id == regionId }
     val active = visible.firstOrNull { it.id == activeId }
     val detail = visible.filterIsInstance<RadarEntry.Signal>().firstOrNull { it.id == detailId }
-    val markers = remember(visible, colors) {
+    val markers = remember(visible, colors, flatMode) {
         visible.map {
             val color = when (it) {
                 is RadarEntry.Signal -> it.signal.layer.color(colors)
-                is RadarEntry.Story -> Color(0xFFE8F2F5)
+                is RadarEntry.Story -> if (flatMode) colors.ink else Color(0xFFE8F2F5)
             }
             GlobeMarker(it.id, it.lat, it.lng, color)
         }
@@ -151,7 +152,7 @@ internal fun PrototypeRadarScreen(
     val globeMap = remember {
         movableContentOf<List<GlobeMarker>, String?, FlyTarget, (String) -> Unit> { points, selection, target, onSelect ->
             if (currentFlatMode.value) {
-                FlatRadarMap(points, selection, target, onSelect, onZoomChanged = {}, modifier = Modifier.fillMaxSize())
+                RadarMarkerMap(points, selection, target, onSelect, onZoomChanged = {}, modifier = Modifier.fillMaxSize())
             } else {
                 GlobeMap(points, selection, target, onSelect, onZoomChanged = {}, modifier = Modifier.fillMaxSize())
             }
@@ -167,6 +168,7 @@ internal fun PrototypeRadarScreen(
             globeMap(markers, activeId, fly, showEntry)
             Box(Modifier.fillMaxSize().safeDrawingPadding().padding(12.dp)) {
                 MapModeSwitch(flatMode, { flatMode = it }, Modifier.align(Alignment.TopStart))
+                MapCredit(flatMode, Modifier.align(Alignment.BottomEnd))
                 GlobeControls(true, { expanded = false }, resetCamera, hideMap, Modifier.align(Alignment.TopEnd))
                 Surface(shape = RoundedCornerShape(10.dp), color = colors.cardSurface, modifier = Modifier.align(Alignment.BottomStart)) {
                     Text(countLabel, color = colors.muted, fontSize = 12.sp, modifier = Modifier.padding(10.dp))
@@ -227,7 +229,7 @@ internal fun PrototypeRadarScreen(
                             globeMap(markers, activeId, fly, showEntry)
                             MapModeSwitch(flatMode, { flatMode = it }, Modifier.align(Alignment.TopStart).padding(8.dp))
                             GlobeControls(false, { expanded = true }, resetCamera, hideMap, Modifier.align(Alignment.TopEnd).padding(4.dp))
-                            Text(if (flatMode) "Drag to pan · Pinch to zoom  |  NASA Black Marble" else "Drag to rotate · Pinch to zoom  |  NASA Black Marble", color = Color(0xFFB3C6CE), fontSize = 9.sp, modifier = Modifier.align(Alignment.BottomCenter).padding(10.dp))
+                            MapCredit(flatMode, Modifier.align(Alignment.BottomEnd).padding(6.dp))
                         }
                     }
                 }
@@ -273,20 +275,36 @@ private fun RadarFilterChip(filter: RadarFeedFilter, selected: Boolean, onClick:
 
 @Composable
 private fun MapModeSwitch(flatMode: Boolean, onChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
-    Row(modifier.background(Color(0xE6101E24), RoundedCornerShape(10.dp))) {
+    val colors = LocalSuvidhaColors.current
+    Row(modifier.background(colors.cardSurface.copy(alpha = 0.94f), RoundedCornerShape(10.dp))) {
         listOf(true to "2D", false to "3D").forEach { (flat, label) ->
             Surface(
                 selected = flatMode == flat,
                 onClick = { onChange(flat) },
                 shape = RoundedCornerShape(8.dp),
-                color = if (flatMode == flat) Color(0xFF17483E) else Color.Transparent,
+                color = if (flatMode == flat) colors.mint else Color.Transparent,
                 modifier = Modifier.heightIn(min = 40.dp),
             ) {
                 Box(Modifier.padding(horizontal = 14.dp), contentAlignment = Alignment.Center) {
-                    Text(label, color = if (flatMode == flat) Color(0xFF78F4CA) else Color(0xFFADC1CA), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(label, color = if (flatMode == flat) colors.green else colors.muted, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MapCredit(flatMode: Boolean, modifier: Modifier = Modifier) {
+    val colors = LocalSuvidhaColors.current
+    val uri = LocalUriHandler.current
+    Surface(modifier = modifier, shape = RoundedCornerShape(6.dp), color = colors.cardSurface.copy(alpha = 0.94f)) {
+        Text(
+            if (flatMode) "© OpenStreetMap contributors" else "NASA Black Marble · 2016",
+            color = colors.muted, fontSize = 9.sp,
+            modifier = Modifier.clickable {
+                uri.openUri(if (flatMode) "https://www.openstreetmap.org/copyright" else "https://science.nasa.gov/earth/earth-observatory/earth-at-night/maps/")
+            }.padding(horizontal = 8.dp, vertical = 5.dp),
+        )
     }
 }
 

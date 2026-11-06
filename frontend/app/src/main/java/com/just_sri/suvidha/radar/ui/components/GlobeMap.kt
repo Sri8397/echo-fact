@@ -30,6 +30,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
+import com.just_sri.suvidha.radar.ui.theme.LocalSuvidhaColors
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -66,6 +68,8 @@ fun GlobeMap(
     modifier: Modifier = Modifier,
 ) {
     val context: Context = LocalContext.current
+    val colors = LocalSuvidhaColors.current
+    val spaceColor = lerp(Color.Black, colors.green, if (colors.isDark) 0.07f else 0.13f)
     val density = LocalDensity.current
     val centerLon = remember { Animatable(0f) }
     val centerLat = remember { Animatable(20f) }
@@ -113,9 +117,10 @@ fun GlobeMap(
     val renderedScale = scale
     SideEffect {
         renderer.updateCamera(renderedLongitude, renderedLatitude, renderedScale)
+        renderer.updateStyle(spaceColor.toArgb(), colors.green.toArgb(), colors.isDark)
         surface.requestRender()
     }
-    Box(modifier.background(Color(0xFF030A10))) {
+    Box(modifier.background(spaceColor)) {
         AndroidView(factory = { surface }, modifier = Modifier.matchParentSize())
         Canvas(
             modifier = Modifier.matchParentSize()

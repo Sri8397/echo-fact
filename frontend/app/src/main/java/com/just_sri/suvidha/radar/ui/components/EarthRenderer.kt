@@ -25,6 +25,17 @@ internal class EarthRenderer(context: Context) : GLSurfaceView.Renderer {
 
     @Volatile private var surfaceWidth: Int = 1
     @Volatile private var surfaceHeight: Int = 1
+    private data class Style(val background: FloatArray, val atmosphere: FloatArray, val brightness: Float)
+    @Volatile private var style = Style(floatArrayOf(.012f, .025f, .035f), floatArrayOf(.1f, .8f, .65f), 1f)
+    private var backgroundLocation = -1
+    private var atmosphereLocation = -1
+    private var brightnessLocation = -1
+
+    fun updateStyle(background: Int, atmosphere: Int, dark: Boolean) {
+        fun rgb(value: Int) = floatArrayOf(android.graphics.Color.red(value) / 255f, android.graphics.Color.green(value) / 255f, android.graphics.Color.blue(value) / 255f)
+        style = Style(rgb(background), rgb(atmosphere), if (dark) .95f else 1.08f)
+    }
+
     private var program: Int = 0
     private var texture: Int = 0
     private var hasTexture: Boolean = false
@@ -78,6 +89,9 @@ internal class EarthRenderer(context: Context) : GLSurfaceView.Renderer {
         cameraLocation = GLES20.glGetUniformLocation(program, "uCamera")
         textureLocation = GLES20.glGetUniformLocation(program, "uEarth")
         hasTextureLocation = GLES20.glGetUniformLocation(program, "uHasTexture")
+        backgroundLocation = GLES20.glGetUniformLocation(program, "uBackground")
+        atmosphereLocation = GLES20.glGetUniformLocation(program, "uAtmosphere")
+        brightnessLocation = GLES20.glGetUniformLocation(program, "uBrightness")
         texture = loadEarthTexture()
         hasTexture = texture != 0
     }
@@ -95,6 +109,10 @@ internal class EarthRenderer(context: Context) : GLSurfaceView.Renderer {
         val pose = camera
         val radius = min(surfaceWidth, surfaceHeight) * 0.44f * pose.scale
         GLES20.glUseProgram(program)
+        val appearance = style
+        GLES20.glUniform3fv(backgroundLocation, 1, appearance.background, 0)
+        GLES20.glUniform3fv(atmosphereLocation, 1, appearance.atmosphere, 0)
+        GLES20.glUniform1f(brightnessLocation, appearance.brightness)
         quad.position(0)
         GLES20.glEnableVertexAttribArray(positionLocation)
         GLES20.glVertexAttribPointer(positionLocation, 2, GLES20.GL_FLOAT, false, 0, quad)
@@ -182,6 +200,9 @@ internal class EarthRenderer(context: Context) : GLSurfaceView.Renderer {
             uniform vec2 uCamera;
             uniform sampler2D uEarth;
             uniform int uHasTexture;
+            uniform vec3 uBackground;
+            uniform vec3 uAtmosphere;
+            uniform float uBrightness;
 
             const float PI = 3.14159265358979323846;
 
@@ -201,7 +222,7 @@ internal class EarthRenderer(context: Context) : GLSurfaceView.Renderer {
                 float atmosphereDist = length(p);
                 if (r2 > 1.0) {
                     float glow = exp(-max(0.0, atmosphereDist - 1.0) * 18.0) * (1.0 - smoothstep(1.0, 1.15, atmosphereDist));
-                    gl_FragColor = vec4(vec3(0.012, 0.025, 0.035) + vec3(0.025, 0.18, 0.16) * glow, 1.0);
+                    gl_FragColor = vec4(uBackground + uAtmosphere * 0.28 * glow, 1.0);
                     return;
                 }
                 float z = sqrt(max(0.0, 1.0 - r2));
@@ -224,7 +245,8 @@ internal class EarthRenderer(context: Context) : GLSurfaceView.Renderer {
                     color *= limbShade;
                 }
                 float rim = pow(1.0 - z, 3.0);
-                color += vec3(0.012, 0.09, 0.30) * rim;
+                color *= uBrightness;
+                color += uAtmosphere * 0.24 * rim;
                 color *= mix(0.88, 1.0, edge);
                 gl_FragColor = vec4(color, 1.0);
             }

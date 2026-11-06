@@ -26,7 +26,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Radar
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.outlined.CenterFocusStrong
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.outlined.FullscreenExit
 import androidx.compose.material.icons.outlined.Search
@@ -47,12 +49,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -64,10 +69,12 @@ import com.just_sri.suvidha.radar.data.RadarEntry
 import com.just_sri.suvidha.radar.data.RadarFeedFilter
 import com.just_sri.suvidha.radar.data.RadarLayer
 import com.just_sri.suvidha.radar.data.RadarSignal
+import com.just_sri.suvidha.radar.data.SavedRadarSignals
 import com.just_sri.suvidha.radar.data.radarFeed
 import com.just_sri.suvidha.radar.data.sourceReferences
 import com.just_sri.suvidha.radar.ui.components.EntryCard
 import com.just_sri.suvidha.radar.ui.components.GlobeMap
+import com.just_sri.suvidha.radar.ui.components.FlatRadarMap
 import com.just_sri.suvidha.radar.ui.components.GlobeMarker
 import com.just_sri.suvidha.radar.ui.components.Tag
 import com.just_sri.suvidha.radar.ui.theme.LocalSuvidhaColors
@@ -80,12 +87,16 @@ internal fun PrototypeRadarScreen(
     onOpenSettings: () -> Unit,
 ) {
     val colors = LocalSuvidhaColors.current
+    val context = LocalContext.current
+    SavedRadarSignals.initialize(context)
     val signals = remember { MockRadarApi.signals().sortedByDescending { it.observedAt } }
     var filter by rememberSaveable { mutableStateOf(RadarFeedFilter.ALL) }
     var query by rememberSaveable { mutableStateOf("") }
     var regionId by rememberSaveable { mutableStateOf(REGIONS.first().id) }
     var activeId by rememberSaveable { mutableStateOf<String?>(null) }
     var detailId by rememberSaveable { mutableStateOf<String?>(null) }
+    var flatMode by rememberSaveable { mutableStateOf(false) }
+    val currentFlatMode = rememberUpdatedState(flatMode)
     var expanded by rememberSaveable { mutableStateOf(false) }
     var mapVisible by rememberSaveable { mutableStateOf(true) }
     var cameraRequest by rememberSaveable { mutableStateOf(0L) }
@@ -108,7 +119,7 @@ internal fun PrototypeRadarScreen(
         visible.map {
             val color = when (it) {
                 is RadarEntry.Signal -> it.signal.layer.color(colors)
-                is RadarEntry.Story -> colors.ink
+                is RadarEntry.Story -> Color(0xFFE8F2F5)
             }
             GlobeMarker(it.id, it.lat, it.lng, color)
         }
@@ -139,7 +150,11 @@ internal fun PrototypeRadarScreen(
     // Move the same globe between layouts so manual pan and zoom survive fullscreen changes.
     val globeMap = remember {
         movableContentOf<List<GlobeMarker>, String?, FlyTarget, (String) -> Unit> { points, selection, target, onSelect ->
-            GlobeMap(points, selection, target, onSelect, onZoomChanged = {}, modifier = Modifier.fillMaxSize())
+            if (currentFlatMode.value) {
+                FlatRadarMap(points, selection, target, onSelect, onZoomChanged = {}, modifier = Modifier.fillMaxSize())
+            } else {
+                GlobeMap(points, selection, target, onSelect, onZoomChanged = {}, modifier = Modifier.fillMaxSize())
+            }
         }
     }
     val hideMap: () -> Unit = {
@@ -151,6 +166,7 @@ internal fun PrototypeRadarScreen(
         Box(Modifier.fillMaxSize().background(colors.canvas)) {
             globeMap(markers, activeId, fly, showEntry)
             Box(Modifier.fillMaxSize().safeDrawingPadding().padding(12.dp)) {
+                MapModeSwitch(flatMode, { flatMode = it }, Modifier.align(Alignment.TopStart))
                 GlobeControls(true, { expanded = false }, resetCamera, hideMap, Modifier.align(Alignment.TopEnd))
                 Surface(shape = RoundedCornerShape(10.dp), color = colors.cardSurface, modifier = Modifier.align(Alignment.BottomStart)) {
                     Text(countLabel, color = colors.muted, fontSize = 12.sp, modifier = Modifier.padding(10.dp))
@@ -209,9 +225,9 @@ internal fun PrototypeRadarScreen(
                     ) {
                         Box {
                             globeMap(markers, activeId, fly, showEntry)
-                            Text("3D GLOBE", color = colors.muted, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.TopStart).padding(12.dp))
+                            MapModeSwitch(flatMode, { flatMode = it }, Modifier.align(Alignment.TopStart).padding(8.dp))
                             GlobeControls(false, { expanded = true }, resetCamera, hideMap, Modifier.align(Alignment.TopEnd).padding(4.dp))
-                            Text("Drag to rotate  ·  Pinch to zoom", color = colors.muted, fontSize = 11.sp, modifier = Modifier.align(Alignment.BottomCenter).padding(10.dp))
+                            Text(if (flatMode) "Drag to pan · Pinch to zoom  |  NASA Black Marble" else "Drag to rotate · Pinch to zoom  |  NASA Black Marble", color = Color(0xFFB3C6CE), fontSize = 9.sp, modifier = Modifier.align(Alignment.BottomCenter).padding(10.dp))
                         }
                     }
                 }
@@ -251,6 +267,25 @@ private fun RadarFilterChip(filter: RadarFeedFilter, selected: Boolean, onClick:
         ) {
             filter.color(colors)?.let { Box(Modifier.size(6.dp).background(it, CircleShape)) }
             Text(filter.label, color = colors.ink, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+        }
+    }
+}
+
+@Composable
+private fun MapModeSwitch(flatMode: Boolean, onChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
+    Row(modifier.background(Color(0xE6101E24), RoundedCornerShape(10.dp))) {
+        listOf(true to "2D", false to "3D").forEach { (flat, label) ->
+            Surface(
+                selected = flatMode == flat,
+                onClick = { onChange(flat) },
+                shape = RoundedCornerShape(8.dp),
+                color = if (flatMode == flat) Color(0xFF17483E) else Color.Transparent,
+                modifier = Modifier.heightIn(min = 40.dp),
+            ) {
+                Box(Modifier.padding(horizontal = 14.dp), contentAlignment = Alignment.Center) {
+                    Text(label, color = if (flatMode == flat) Color(0xFF78F4CA) else Color(0xFFADC1CA), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+            }
         }
     }
 }
@@ -369,9 +404,12 @@ private fun SignalCard(signal: RadarSignal, selected: Boolean, onClick: () -> Un
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SignalDetails(signal: RadarSignal, onClose: () -> Unit) {
+internal fun SignalDetails(signal: RadarSignal, onClose: () -> Unit) {
     val colors = LocalSuvidhaColors.current
     val uriHandler = LocalUriHandler.current
+    val context = LocalContext.current
+    val savedIds by SavedRadarSignals.ids.collectAsStateWithLifecycle()
+    val isSaved = signal.id in savedIds
     ModalBottomSheet(
         onDismissRequest = onClose,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -381,9 +419,22 @@ private fun SignalDetails(signal: RadarSignal, onClose: () -> Unit) {
             Modifier.verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 20.dp, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Tag("Simulated", colors.accent)
-                Tag(signal.layer.label, signal.layer.color(colors))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Tag("Simulated", colors.accent)
+                    Tag(signal.layer.label, signal.layer.color(colors))
+                }
+                IconButton(onClick = { SavedRadarSignals.toggle(context, signal.id) }, modifier = Modifier.size(44.dp)) {
+                    Icon(
+                        imageVector = if (isSaved) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                        contentDescription = if (isSaved) "Remove from saved radar signals" else "Save radar signal",
+                        tint = if (isSaved) colors.green else colors.muted,
+                    )
+                }
             }
             Text(signal.title, color = colors.ink, fontSize = 23.sp, fontWeight = FontWeight.Bold)
             Text(signal.locationName, color = colors.ink, fontSize = 15.sp)

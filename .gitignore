@@ -26,4 +26,4 @@ Thumbs.db
 backend/data/*.db
 
 # Local Android screenshots
-/suvidha-screenshots/
+suvidha-screenshots/

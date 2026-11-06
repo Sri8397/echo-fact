@@ -33,7 +33,7 @@ class MockRadarApiTest {
     }
 
     @Test
-    fun fixtureTimesAreStrictUtcAndSourcesUseHttps() {
+    fun fixtureTimesAreStrictUtc() {
         for (signal in MockRadarApi.signals()) {
             val parsedTime: LocalDateTime? = try {
                 LocalDateTime.parse(signal.observedAt, timestampFormatter)
@@ -41,15 +41,35 @@ class MockRadarApiTest {
                 null
             }
             assertNotNull("Invalid UTC timestamp for ${signal.id}: ${signal.observedAt}", parsedTime)
+        }
+    }
 
-            val sourceUri: URI? = try {
-                URI(signal.sourceUrl)
-            } catch (_: Exception) {
-                null
+    @Test
+    fun everyLayerHasTwoDistinctWellFormedOfficialSourceReferences() {
+        for (layer in RadarLayer.entries) {
+            val references: List<RadarSourceReference> = layer.sourceReferences()
+            assertEquals("$layer should have two source references", 2, references.size)
+
+            for (reference in references) {
+                assertTrue("Publisher missing for $layer", reference.publisher.isNotBlank())
+                assertTrue("Title missing for $layer", reference.title.isNotBlank())
+                assertTrue("Description missing for $layer", reference.description.isNotBlank())
+
+                val sourceUri: URI? = try {
+                    URI(reference.url)
+                } catch (_: Exception) {
+                    null
+                }
+                assertNotNull("Invalid source URL for $layer: ${reference.url}", sourceUri)
+                assertEquals("https", sourceUri?.scheme)
+                assertTrue("Source host missing for $layer", !sourceUri?.host.isNullOrBlank())
             }
-            assertNotNull("Invalid source URL for ${signal.id}: ${signal.sourceUrl}", sourceUri)
-            assertEquals("https", sourceUri?.scheme)
-            assertFalse("Source host missing for ${signal.id}", sourceUri?.host.isNullOrBlank())
+
+            assertEquals(
+                "$layer source URLs should be distinct",
+                references.map { it.url }.toSet().size,
+                references.size,
+            )
         }
     }
 }

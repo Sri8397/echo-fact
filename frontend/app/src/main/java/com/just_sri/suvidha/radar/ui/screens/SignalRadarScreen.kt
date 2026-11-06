@@ -33,7 +33,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -53,6 +52,7 @@ import com.just_sri.suvidha.radar.FlyTarget
 import com.just_sri.suvidha.radar.data.MockRadarApi
 import com.just_sri.suvidha.radar.data.RadarLayer
 import com.just_sri.suvidha.radar.data.RadarSignal
+import com.just_sri.suvidha.radar.data.sourceReferences
 import com.just_sri.suvidha.radar.ui.components.EntryCard
 import com.just_sri.suvidha.radar.ui.components.GlobeMap
 import com.just_sri.suvidha.radar.ui.components.GlobeMarker
@@ -228,9 +228,15 @@ private fun SignalDetails(signal: RadarSignal, onClose: () -> Unit) {
             Text(signal.locationName, color = colors.ink, fontSize = 15.sp)
             Text("Demo time  ${signal.observedAt}  ·  ${signal.severity}", color = colors.muted, fontSize = 13.sp)
             Text(signal.summary, color = colors.ink, fontSize = 15.sp)
-            Text("Provider reference", color = colors.muted, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-            TextButton(onClick = { uriHandler.openUri(signal.sourceUrl) }) {
-                Text(signal.sourceName)
+            Text("Sources", color = colors.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+            Text("Official references for this layer. This demo event is fictional.", color = colors.muted, fontSize = 13.sp)
+            for (source in signal.layer.sourceReferences()) {
+                EntryCard(onClick = { uriHandler.openUri(source.url) }) {
+                    Text(source.publisher, color = colors.muted, fontSize = 12.sp)
+                    Text(source.title, color = colors.ink, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                    Text(source.description, color = colors.muted, fontSize = 13.sp)
+                    Text("Open reference ↗", color = colors.green, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                }
             }
         }
     }

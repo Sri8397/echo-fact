@@ -18,11 +18,9 @@ data class RadarSignal(
     val observedAt: String,
     val severity: String,
     val summary: String,
-    val sourceName: String,
-    val sourceUrl: String,
 )
 
-/** Static fictional fixture data. Provider links point to reference homepages, not event reports. */
+/** Static fictional signal data for prototyping native radar presentation. */
 object MockRadarApi {
     fun signals(): List<RadarSignal> = listOf(
         RadarSignal(
@@ -35,8 +33,6 @@ object MockRadarApi {
             observedAt = "2026-11-06 02:15 UTC",
             severity = "Moderate",
             summary = "Fictional prototype signal showing how a recent offshore tremor could appear on the seismic layer.",
-            sourceName = "USGS Earthquake Hazards Program",
-            sourceUrl = "https://earthquake.usgs.gov/",
         ),
         RadarSignal(
             id = "mock-seismic-sunda",
@@ -48,8 +44,6 @@ object MockRadarApi {
             observedAt = "2026-11-06 05:40 UTC",
             severity = "Low",
             summary = "Fictional sample for testing an event marker and concise seismic summary in Southeast Asia.",
-            sourceName = "USGS Earthquake Hazards Program",
-            sourceUrl = "https://earthquake.usgs.gov/",
         ),
         RadarSignal(
             id = "mock-seismic-andes",
@@ -61,8 +55,6 @@ object MockRadarApi {
             observedAt = "2026-11-06 08:05 UTC",
             severity = "Elevated",
             summary = "Fictional fixture for checking severity styling and map coverage along the Andes.",
-            sourceName = "USGS Earthquake Hazards Program",
-            sourceUrl = "https://earthquake.usgs.gov/",
         ),
         RadarSignal(
             id = "mock-weather-caribbean",
@@ -74,8 +66,6 @@ object MockRadarApi {
             observedAt = "2026-11-06 03:00 UTC",
             severity = "Moderate",
             summary = "Fictional weather fixture representing a broad rain band for regional layer previews.",
-            sourceName = "National Hurricane Center",
-            sourceUrl = "https://www.nhc.noaa.gov/",
         ),
         RadarSignal(
             id = "mock-weather-bay-bengal",
@@ -87,8 +77,6 @@ object MockRadarApi {
             observedAt = "2026-11-06 06:20 UTC",
             severity = "High",
             summary = "Fictional sample showing a coastal wind alert card and marker in the Bay of Bengal region.",
-            sourceName = "India Meteorological Department",
-            sourceUrl = "https://mausam.imd.gov.in/",
         ),
         RadarSignal(
             id = "mock-weather-mediterranean",
@@ -100,8 +88,6 @@ object MockRadarApi {
             observedAt = "2026-11-06 09:10 UTC",
             severity = "Low",
             summary = "Fictional fixture for testing weather layer density across a separate world region.",
-            sourceName = "Météo-France",
-            sourceUrl = "https://meteofrance.com/",
         ),
         RadarSignal(
             id = "mock-maritime-malacca",
@@ -113,8 +99,6 @@ object MockRadarApi {
             observedAt = "2026-11-06 01:35 UTC",
             severity = "Busy",
             summary = "Fictional traffic marker for prototyping maritime density and vessel activity summaries.",
-            sourceName = "MarineTraffic",
-            sourceUrl = "https://www.marinetraffic.com/",
         ),
         RadarSignal(
             id = "mock-maritime-gibraltar",
@@ -126,8 +110,6 @@ object MockRadarApi {
             observedAt = "2026-11-06 04:55 UTC",
             severity = "Steady",
             summary = "Fictional sample showing a second major chokepoint in the maritime layer.",
-            sourceName = "MarineTraffic",
-            sourceUrl = "https://www.marinetraffic.com/",
         ),
         RadarSignal(
             id = "mock-maritime-panamacan",
@@ -139,8 +121,6 @@ object MockRadarApi {
             observedAt = "2026-11-06 10:25 UTC",
             severity = "Busy",
             summary = "Fictional fixture for testing maritime traffic markers in the Americas.",
-            sourceName = "Panama Canal Authority",
-            sourceUrl = "https://pancanal.com/",
         ),
     )
 }

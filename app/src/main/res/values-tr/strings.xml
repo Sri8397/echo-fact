@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">Dil</string>
+    <string name="settings_map_provider">Harita döşeme sağlayıcısı</string>
+    <string name="settings_map_theme">Harita teması</string>
+    <string name="settings_globe_preset">Görsel ön ayar</string>
+    <string name="settings_theater_presets">Kapsama ön ayarları</string>
+    <string name="settings_stream_quality">Video Kalitesi</string>
+    <string name="settings_stream_idle_stop">Hareketsizlik sırasında canlı videoyu durdur</string>
+</resources>

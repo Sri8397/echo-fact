@@ -1,0 +1,1197 @@
+{
+  "version": 1,
+  "categories": [
+    "Markets",
+    "World",
+    "Security",
+    "Planet",
+    "Technology"
+  ],
+  "panels": [
+    {
+      "id": "markets",
+      "title": "Markets",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "crypto",
+      "title": "Crypto",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "commodities",
+      "title": "Metals & Materials",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "finance",
+      "title": "Financial",
+      "category": "Markets",
+      "enabled": true,
+      "source": {
+        "type": "rpc",
+        "key": "news/v1/list-feed-digest?variant=full&lang=en&public=1"
+      },
+      "view": {
+        "blocks": [
+          {
+            "type": "summary",
+            "text": "Latest headlines from the GodsEye news digest."
+          },
+          {
+            "type": "list",
+            "items": "categories.finance.items",
+            "title": "{title}",
+            "subtitle": "{source}",
+            "url": "link",
+            "limit": 25
+          }
+        ]
+      }
+    },
+    {
+      "id": "heatmap",
+      "title": "Sector Heatmap",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "economic",
+      "title": "Macro Stress",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "stock-analysis",
+      "title": "Stock Analysis",
+      "category": "Markets",
+      "enabled": false
+    },
+    {
+      "id": "stock-backtest",
+      "title": "Stock Backtest",
+      "category": "Markets",
+      "enabled": false
+    },
+    {
+      "id": "macro-signals",
+      "title": "Macro Signals",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "etf-flows",
+      "title": "Etf Flows",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "stablecoins",
+      "title": "Stablecoins",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "prediction-markets",
+      "title": "Prediction Markets",
+      "category": "Markets",
+      "enabled": true,
+      "source": {
+        "type": "rpc",
+        "key": "prediction/v1/list-prediction-markets?public=1"
+      },
+      "view": {
+        "blocks": [
+          {
+            "type": "summary",
+            "text": "Polymarket and Kalshi Yes prices, as published"
+          },
+          {
+            "type": "list",
+            "items": "markets",
+            "title": "{title}",
+            "subtitle": "{category}",
+            "value": {
+              "path": "yesPrice",
+              "format": "probability"
+            },
+            "change": "yesPriceChange24h",
+            "url": "url",
+            "limit": 25
+          }
+        ]
+      }
+    },
+    {
+      "id": "energy-complex",
+      "title": "Energy Complex",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "defi-tokens",
+      "title": "Defi Tokens",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "ai-tokens",
+      "title": "Ai Tokens",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "other-tokens",
+      "title": "Other Tokens",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "fear-greed",
+      "title": "Fear & Greed",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "market-breadth",
+      "title": "Market Breadth",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "aaii-sentiment",
+      "title": "AAII Investor Sentiment",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "positioning-247",
+      "title": "24/7 Positioning",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "polymarket",
+      "title": "Predictions",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "crypto-heatmap",
+      "title": "Crypto Heatmap",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "fx",
+      "title": "Foreign Exchange Rates",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "fsi",
+      "title": "Financial Stress Indicator",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "macro-tiles",
+      "title": "Macro Indicators",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "national-debt",
+      "title": "National Debt",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "gulf-economies",
+      "title": "Gulf Economies",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "trade-policy",
+      "title": "Trade Policy",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "supply-chain",
+      "title": "Supply Chain",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "oil-inventories",
+      "title": "Oil Inventories",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "energy-risk-overview",
+      "title": "Global Energy Risk Overview",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "fuel-prices",
+      "title": "Fuel Prices",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "consumer-prices",
+      "title": "Consumer Prices",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "grocery-basket",
+      "title": "Grocery Index",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "fao-food-price-index",
+      "title": "Food Prices",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "bigmac",
+      "title": "Real Big Mac Index",
+      "category": "Markets",
+      "enabled": true
+    },
+    {
+      "id": "politics",
+      "title": "World News",
+      "category": "World",
+      "enabled": true,
+      "source": {
+        "type": "rpc",
+        "key": "news/v1/list-feed-digest?variant=full&lang=en&public=1"
+      },
+      "view": {
+        "blocks": [
+          {
+            "type": "summary",
+            "text": "Latest headlines from the GodsEye news digest."
+          },
+          {
+            "type": "list",
+            "items": "categories.politics.items",
+            "title": "{title}",
+            "subtitle": "{source}",
+            "url": "link",
+            "limit": 25
+          }
+        ]
+      }
+    },
+    {
+      "id": "intel",
+      "title": "Intel Feed",
+      "category": "World",
+      "enabled": true,
+      "source": {
+        "type": "rpc",
+        "key": "news/v1/list-feed-digest?variant=full&lang=en&public=1"
+      },
+      "view": {
+        "blocks": [
+          {
+            "type": "summary",
+            "text": "Latest headlines from the GodsEye news digest."
+          },
+          {
+            "type": "list",
+            "items": "categories.intel.items",
+            "title": "{title}",
+            "subtitle": "{source}",
+            "url": "link",
+            "limit": 25
+          }
+        ]
+      }
+    },
+    {
+      "id": "us",
+      "title": "United States",
+      "category": "World",
+      "enabled": true,
+      "source": {
+        "type": "rpc",
+        "key": "news/v1/list-feed-digest?variant=full&lang=en&public=1"
+      },
+      "view": {
+        "blocks": [
+          {
+            "type": "summary",
+            "text": "Latest headlines from the GodsEye news digest."
+          },
+          {
+            "type": "list",
+            "items": "categories.us.items",
+            "title": "{title}",
+            "subtitle": "{source}",
+            "url": "link",
+            "limit": 25
+          }
+        ]
+      }
+    },
+    {
+      "id": "europe",
+      "title": "Europe",
+      "category": "World",
+      "enabled": true,
+      "source": {
+        "type": "rpc",
+        "key": "news/v1/list-feed-digest?variant=full&lang=en&public=1"
+      },
+      "view": {
+        "blocks": [
+          {
+            "type": "summary",
+            "text": "Latest headlines from the GodsEye news digest."
+          },
+          {
+            "type": "list",
+            "items": "categories.europe.items",
+            "title": "{title}",
+            "subtitle": "{source}",
+            "url": "link",
+            "limit": 25
+          }
+        ]
+      }
+    },
+    {
+      "id": "middleeast",
+      "title": "Middle East",
+      "category": "World",
+      "enabled": true,
+      "source": {
+        "type": "rpc",
+        "key": "news/v1/list-feed-digest?variant=full&lang=en&public=1"
+      },
+      "view": {
+        "blocks": [
+          {
+            "type": "summary",
+            "text": "Latest headlines from the GodsEye news digest."
+          },
+          {
+            "type": "list",
+            "items": "categories.middleeast.items",
+            "title": "{title}",
+            "subtitle": "{source}",
+            "url": "link",
+            "limit": 25
+          }
+        ]
+      }
+    },
+    {
+      "id": "africa",
+      "title": "Africa",
+      "category": "World",
+      "enabled": true,
+      "source": {
+        "type": "rpc",
+        "key": "news/v1/list-feed-digest?variant=full&lang=en&public=1"
+      },
+      "view": {
+        "blocks": [
+          {
+            "type": "summary",
+            "text": "Latest headlines from the GodsEye news digest."
+          },
+          {
+            "type": "list",
+            "items": "categories.africa.items",
+            "title": "{title}",
+            "subtitle": "{source}",
+            "url": "link",
+            "limit": 25
+          }
+        ]
+      }
+    },
+    {
+      "id": "latam",
+      "title": "Latin America",
+      "category": "World",
+      "enabled": true,
+      "source": {
+        "type": "rpc",
+        "key": "news/v1/list-feed-digest?variant=full&lang=en&public=1"
+      },
+      "view": {
+        "blocks": [
+          {
+            "type": "summary",
+            "text": "Latest headlines from the GodsEye news digest."
+          },
+          {
+            "type": "list",
+            "items": "categories.latam.items",
+            "title": "{title}",
+            "subtitle": "{source}",
+            "url": "link",
+            "limit": 25
+          }
+        ]
+      }
+    },
+    {
+      "id": "asia",
+      "title": "Asia-Pacific",
+      "category": "World",
+      "enabled": true,
+      "source": {
+        "type": "rpc",
+        "key": "news/v1/list-feed-digest?variant=full&lang=en&public=1"
+      },
+      "view": {
+        "blocks": [
+          {
+            "type": "summary",
+            "text": "Latest headlines from the GodsEye news digest."
+          },
+          {
+            "type": "list",
+            "items": "categories.asia.items",
+            "title": "{title}",
+            "subtitle": "{source}",
+            "url": "link",
+            "limit": 25
+          }
+        ]
+      }
+    },
+    {
+      "id": "gov",
+      "title": "Government",
+      "category": "World",
+      "enabled": true,
+      "source": {
+        "type": "rpc",
+        "key": "news/v1/list-feed-digest?variant=full&lang=en&public=1"
+      },
+      "view": {
+        "blocks": [
+          {
+            "type": "summary",
+            "text": "Latest headlines from the GodsEye news digest."
+          },
+          {
+            "type": "list",
+            "items": "categories.gov.items",
+            "title": "{title}",
+            "subtitle": "{source}",
+            "url": "link",
+            "limit": 25
+          }
+        ]
+      }
+    },
+    {
+      "id": "thinktanks",
+      "title": "Think Tanks",
+      "category": "World",
+      "enabled": true,
+      "source": {
+        "type": "rpc",
+        "key": "news/v1/list-feed-digest?variant=full&lang=en&public=1"
+      },
+      "view": {
+        "blocks": [
+          {
+            "type": "summary",
+            "text": "Latest headlines from the GodsEye news digest."
+          },
+          {
+            "type": "list",
+            "items": "categories.thinktanks.items",
+            "title": "{title}",
+            "subtitle": "{source}",
+            "url": "link",
+            "limit": 25
+          }
+        ]
+      }
+    },
+    {
+      "id": "live-news",
+      "title": "Live News",
+      "category": "World",
+      "enabled": false
+    },
+    {
+      "id": "live-webcams",
+      "title": "Live Webcams",
+      "category": "World",
+      "enabled": true,
+      "source": {
+        "type": "static",
+        "data": {
+          "note": "Opens the live stream on YouTube. Streams can go offline.",
+          "cameras": [
+            {
+              "id": "jerusalem-1",
+              "lat": 31.7683,
+              "lng": 35.2137,
+              "city": "Jerusalem",
+              "region": "Middle East",
+              "url": "https://www.youtube.com/watch?v=zp6LNSoq000",
+              "detail": "Israel · Middle East",
+              "action": "Watch"
+            },
+            {
+              "id": "mecca-1",
+              "lat": 21.4225,
+              "lng": 39.8262,
+              "city": "Mecca",
+              "region": "Middle East",
+              "url": "https://www.youtube.com/watch?v=eC4LfEVxvKg",
+              "detail": "Saudi Arabia · Middle East",
+              "action": "Watch"
+            },
+            {
+              "id": "kyiv-1",
+              "lat": 50.4501,
+              "lng": 30.5234,
+              "city": "Ukraine",
+              "region": "Europe",
+              "url": "https://www.youtube.com/watch?v=e2gC37ILQmk",
+              "detail": "Europe",
+              "action": "Watch"
+            },
+            {
+              "id": "paris-1",
+              "lat": 48.8566,
+              "lng": 2.3522,
+              "city": "Paris",
+              "region": "Europe",
+              "url": "https://www.youtube.com/watch?v=-xzg3wujOVM",
+              "detail": "France · Europe",
+              "action": "Watch"
+            },
+            {
+              "id": "st-petersburg-1",
+              "lat": 59.9343,
+              "lng": 30.3351,
+              "city": "St. Petersburg",
+              "region": "Europe",
+              "url": "https://www.youtube.com/watch?v=CjtIYbmVfck",
+              "detail": "Russia · Europe",
+              "action": "Watch"
+            },
+            {
+              "id": "london-1",
+              "lat": 51.5072,
+              "lng": -0.1276,
+              "city": "London",
+              "region": "Europe",
+              "url": "https://www.youtube.com/watch?v=zMCea32gpmg",
+              "detail": "UK · Europe",
+              "action": "Watch"
+            },
+            {
+              "id": "new-york-2",
+              "lat": 40.7128,
+              "lng": -74.006,
+              "city": "New York (2)",
+              "region": "Americas",
+              "url": "https://www.youtube.com/watch?v=VGnFLdQW39A",
+              "detail": "USA · Americas",
+              "action": "Watch"
+            },
+            {
+              "id": "los-angeles-1",
+              "lat": 34.0522,
+              "lng": -118.2437,
+              "city": "Los Angeles",
+              "region": "Americas",
+              "url": "https://www.youtube.com/watch?v=EO_1LWqsCNE",
+              "detail": "USA · Americas",
+              "action": "Watch"
+            },
+            {
+              "id": "miami-2",
+              "lat": 25.7617,
+              "lng": -80.1918,
+              "city": "Miami (2)",
+              "region": "Americas",
+              "url": "https://www.youtube.com/watch?v=bi7B4EmyHHs",
+              "detail": "USA · Americas",
+              "action": "Watch"
+            },
+            {
+              "id": "taipei-1",
+              "lat": 25.033,
+              "lng": 121.5654,
+              "city": "Taipei",
+              "region": "Asia-Pacific",
+              "url": "https://www.youtube.com/watch?v=z_fY1pj1VBw",
+              "detail": "Taiwan · Asia-Pacific",
+              "action": "Watch"
+            },
+            {
+              "id": "tokyo-1",
+              "lat": 35.6762,
+              "lng": 139.6503,
+              "city": "Tokyo",
+              "region": "Asia-Pacific",
+              "url": "https://www.youtube.com/watch?v=_k-5U7IeK8g",
+              "detail": "Japan · Asia-Pacific",
+              "action": "Watch"
+            },
+            {
+              "id": "seoul-1",
+              "lat": 37.5665,
+              "lng": 126.978,
+              "city": "Seoul",
+              "region": "Asia-Pacific",
+              "url": "https://www.youtube.com/watch?v=vk5BHoDxXf0",
+              "detail": "South Korea · Asia-Pacific",
+              "action": "Watch"
+            },
+            {
+              "id": "sydney-1",
+              "lat": -33.8688,
+              "lng": 151.2093,
+              "city": "Sydney",
+              "region": "Asia-Pacific",
+              "url": "https://www.youtube.com/watch?v=5uZa3-RMFos",
+              "detail": "Australia · Asia-Pacific",
+              "action": "Watch"
+            },
+            {
+              "id": "iss-earth-1",
+              "city": "ISS Earth View",
+              "region": "Space",
+              "url": "https://www.youtube.com/watch?v=M3HKLzjvKPc",
+              "detail": "Space",
+              "action": "Watch"
+            },
+            {
+              "id": "space-x-1",
+              "city": "SpaceX (1)",
+              "region": "Space",
+              "url": "https://www.youtube.com/watch?v=mhJRzQsLZGg",
+              "detail": "Space",
+              "action": "Watch"
+            },
+            {
+              "id": "space-x-2",
+              "city": "SpaceX (2)",
+              "region": "Space",
+              "url": "https://www.youtube.com/watch?v=Jm8wRjD3xVA",
+              "detail": "Space",
+              "action": "Watch"
+            },
+            {
+              "id": "space-walk-1",
+              "city": "Space",
+              "region": "Space",
+              "url": "https://www.youtube.com/watch?v=fO9e9jnhYK8",
+              "detail": "Space",
+              "action": "Watch"
+            }
+          ],
+          "offline": [
+            {
+              "id": "middle-east-1",
+              "city": "Middle East",
+              "region": "Middle East",
+              "url": "https://www.youtube.com/watch?v=AkqGOcpDvZU",
+              "detail": "Middle East",
+              "action": "Watch"
+            },
+            {
+              "id": "istanbul-1",
+              "lat": 41.0082,
+              "lng": 28.9784,
+              "city": "Istanbul",
+              "region": "Middle East",
+              "url": "https://www.youtube.com/watch?v=bbVe5h7X3uw",
+              "detail": "Turkey · Middle East",
+              "action": "Watch"
+            },
+            {
+              "id": "medina-1",
+              "lat": 24.4672,
+              "lng": 39.6024,
+              "city": "Medina",
+              "region": "Middle East",
+              "url": "https://www.youtube.com/watch?v=naaOMgZbIHQ",
+              "detail": "Saudi Arabia · Middle East",
+              "action": "Watch"
+            },
+            {
+              "id": "washington-1",
+              "lat": 38.9072,
+              "lng": -77.0369,
+              "city": "Washington DC",
+              "region": "Americas",
+              "url": "https://www.youtube.com/watch?v=oDCAAfOSqvA",
+              "detail": "USA · Americas",
+              "action": "Watch"
+            },
+            {
+              "id": "new-york-1",
+              "lat": 40.7128,
+              "lng": -74.006,
+              "city": "New York (1)",
+              "region": "Americas",
+              "url": "https://www.youtube.com/watch?v=JQ_jwk_7OVE",
+              "detail": "USA · Americas",
+              "action": "Watch"
+            },
+            {
+              "id": "miami-1",
+              "lat": 25.7617,
+              "lng": -80.1918,
+              "city": "Miami (1)",
+              "region": "Americas",
+              "url": "https://www.youtube.com/watch?v=WT69M210Z18",
+              "detail": "USA · Americas",
+              "action": "Watch"
+            },
+            {
+              "id": "miami-3",
+              "lat": 25.7617,
+              "lng": -80.1918,
+              "city": "Miami (3)",
+              "region": "Americas",
+              "url": "https://www.youtube.com/watch?v=4fzzp0XVPoA",
+              "detail": "USA · Americas",
+              "action": "Watch"
+            },
+            {
+              "id": "shanghai-1",
+              "lat": 31.2304,
+              "lng": 121.4737,
+              "city": "Shanghai",
+              "region": "Asia-Pacific",
+              "url": "https://www.youtube.com/watch?v=Z-g8M1QGKbg",
+              "detail": "China · Asia-Pacific",
+              "action": "Watch"
+            },
+            {
+              "id": "nasa-live-1",
+              "city": "NASA TV",
+              "region": "Space",
+              "url": "https://www.youtube.com/watch?v=awQzjn72bI0",
+              "detail": "Space",
+              "action": "Watch"
+            }
+          ]
+        }
+      },
+      "view": {
+        "blocks": [
+          {
+            "type": "summary",
+            "text": "{note}"
+          },
+          {
+            "type": "list",
+            "items": "cameras",
+            "title": "{city}",
+            "subtitle": "{detail}",
+            "value": {
+              "path": "action"
+            },
+            "url": "url",
+            "limit": 60
+          }
+        ]
+      }
+    },
+    {
+      "id": "windy-webcams",
+      "title": "Windy Webcams",
+      "category": "World",
+      "enabled": false
+    },
+    {
+      "id": "telegram-intel",
+      "title": "Telegram Intel",
+      "category": "World",
+      "enabled": false
+    },
+    {
+      "id": "gdelt-intel",
+      "title": "Gdelt Intel",
+      "category": "World",
+      "enabled": true
+    },
+    {
+      "id": "social-velocity",
+      "title": "Social Velocity",
+      "category": "World",
+      "enabled": true
+    },
+    {
+      "id": "cii",
+      "title": "Country Instability",
+      "category": "Security",
+      "enabled": true
+    },
+    {
+      "id": "strategic-risk",
+      "title": "Strategic Risk",
+      "category": "Security",
+      "enabled": false
+    },
+    {
+      "id": "strategic-posture",
+      "title": "Strategic Posture",
+      "category": "Security",
+      "enabled": true
+    },
+    {
+      "id": "forecast",
+      "title": "Forecast",
+      "category": "Security",
+      "enabled": false
+    },
+    {
+      "id": "military-correlation",
+      "title": "Force Posture",
+      "category": "Security",
+      "enabled": true
+    },
+    {
+      "id": "escalation-correlation",
+      "title": "Escalation Correlation",
+      "category": "Security",
+      "enabled": true,
+      "source": {
+        "type": "bootstrap",
+        "key": "correlationCards",
+        "tier": "on-demand"
+      },
+      "view": {
+        "blocks": [
+          {
+            "type": "summary",
+            "text": "Conflict and news escalation scores by country, from the correlation engine."
+          },
+          {
+            "type": "list",
+            "items": "escalation",
+            "title": "{title}",
+            "subtitle": "{location.label}",
+            "value": {
+              "path": "score"
+            },
+            "sort": {
+              "path": "score",
+              "order": "desc"
+            },
+            "limit": 25
+          }
+        ]
+      }
+    },
+    {
+      "id": "ucdp-events",
+      "title": "Ucdp Events",
+      "category": "Security",
+      "enabled": false
+    },
+    {
+      "id": "security-advisories",
+      "title": "Security Advisories",
+      "category": "Security",
+      "enabled": true
+    },
+    {
+      "id": "sanctions-pressure",
+      "title": "Sanctions Pressure",
+      "category": "Security",
+      "enabled": true
+    },
+    {
+      "id": "oref-sirens",
+      "title": "Oref Sirens",
+      "category": "Security",
+      "enabled": false
+    },
+    {
+      "id": "airline-intel",
+      "title": "Air Intelligence",
+      "category": "Security",
+      "enabled": true
+    },
+    {
+      "id": "cross-source-signals",
+      "title": "Cross-Source Signals",
+      "category": "Security",
+      "enabled": true
+    },
+    {
+      "id": "energy-crisis",
+      "title": "Energy Crisis Tracker",
+      "category": "Security",
+      "enabled": true
+    },
+    {
+      "id": "fuel-shortages",
+      "title": "Fuel Shortages",
+      "category": "Security",
+      "enabled": true
+    },
+    {
+      "id": "climate",
+      "title": "Climate Anomalies",
+      "category": "Planet",
+      "enabled": true
+    },
+    {
+      "id": "satellite-fires",
+      "title": "Satellite Fires",
+      "category": "Planet",
+      "enabled": true
+    },
+    {
+      "id": "displacement",
+      "title": "Refugees and displacement",
+      "category": "Planet",
+      "enabled": true,
+      "source": {
+        "type": "rpc",
+        "key": "displacement/v1/get-displacement-summary?flow_limit=50&public=1"
+      },
+      "view": {
+        "blocks": [
+          {
+            "type": "summary",
+            "text": "UNHCR {summary.year} displaced people by country, largest first"
+          },
+          {
+            "type": "list",
+            "items": "summary.countries",
+            "title": "{name}",
+            "subtitle": "{code}",
+            "value": {
+              "path": "totalDisplaced",
+              "format": "number"
+            },
+            "sort": {
+              "path": "totalDisplaced",
+              "order": "desc"
+            },
+            "limit": 25
+          }
+        ]
+      }
+    },
+    {
+      "id": "population-exposure",
+      "title": "Population Exposure",
+      "category": "Planet",
+      "enabled": false
+    },
+    {
+      "id": "radiation-watch",
+      "title": "Radiation Watch",
+      "category": "Planet",
+      "enabled": true
+    },
+    {
+      "id": "thermal-escalation",
+      "title": "Thermal Escalation",
+      "category": "Planet",
+      "enabled": true
+    },
+    {
+      "id": "disaster-correlation",
+      "title": "Disaster Correlation",
+      "category": "Planet",
+      "enabled": true,
+      "source": {
+        "type": "bootstrap",
+        "key": "correlationCards",
+        "tier": "on-demand"
+      },
+      "view": {
+        "blocks": [
+          {
+            "type": "summary",
+            "text": "Disaster cascade scores from linked hazard signals, as published."
+          },
+          {
+            "type": "list",
+            "items": "disaster",
+            "title": "{title}",
+            "subtitle": "{location.label}",
+            "value": {
+              "path": "score"
+            },
+            "sort": {
+              "path": "score",
+              "order": "desc"
+            },
+            "limit": 25
+          }
+        ]
+      }
+    },
+    {
+      "id": "giving",
+      "title": "Global Giving",
+      "category": "Planet",
+      "enabled": true
+    },
+    {
+      "id": "positive-feed",
+      "title": "Positive Feed",
+      "category": "Planet",
+      "enabled": true
+    },
+    {
+      "id": "progress",
+      "title": "Human Progress",
+      "category": "Planet",
+      "enabled": true
+    },
+    {
+      "id": "renewable-energy",
+      "title": "Renewable Energy",
+      "category": "Planet",
+      "enabled": true
+    },
+    {
+      "id": "species",
+      "title": "Species Comeback",
+      "category": "Planet",
+      "enabled": false
+    },
+    {
+      "id": "climate-news",
+      "title": "Climate News",
+      "category": "Planet",
+      "enabled": true
+    },
+    {
+      "id": "disease-outbreaks",
+      "title": "Disease Outbreaks",
+      "category": "Planet",
+      "enabled": true
+    },
+    {
+      "id": "tech",
+      "title": "Technology",
+      "category": "Technology",
+      "enabled": true,
+      "source": {
+        "type": "rpc",
+        "key": "news/v1/list-feed-digest?variant=full&lang=en&public=1"
+      },
+      "view": {
+        "blocks": [
+          {
+            "type": "summary",
+            "text": "Latest headlines from the GodsEye news digest."
+          },
+          {
+            "type": "list",
+            "items": "categories.tech.items",
+            "title": "{title}",
+            "subtitle": "{source}",
+            "url": "link",
+            "limit": 25
+          }
+        ]
+      }
+    },
+    {
+      "id": "ai",
+      "title": "AI & machine learning",
+      "category": "Technology",
+      "enabled": true,
+      "source": {
+        "type": "rpc",
+        "key": "news/v1/list-feed-digest?variant=full&lang=en&public=1"
+      },
+      "view": {
+        "blocks": [
+          {
+            "type": "summary",
+            "text": "Latest headlines from the GodsEye news digest."
+          },
+          {
+            "type": "list",
+            "items": "categories.ai.items",
+            "title": "{title}",
+            "subtitle": "{source}",
+            "url": "link",
+            "limit": 25
+          }
+        ]
+      }
+    },
+    {
+      "id": "layoffs",
+      "title": "Layoffs Tracker",
+      "category": "Technology",
+      "enabled": true,
+      "source": {
+        "type": "rpc",
+        "key": "news/v1/list-feed-digest?variant=full&lang=en&public=1"
+      },
+      "view": {
+        "blocks": [
+          {
+            "type": "summary",
+            "text": "Latest headlines from the GodsEye news digest."
+          },
+          {
+            "type": "list",
+            "items": "categories.layoffs.items",
+            "title": "{title}",
+            "subtitle": "{source}",
+            "url": "link",
+            "limit": 25
+          }
+        ]
+      }
+    },
+    {
+      "id": "events",
+      "title": "Tech Events",
+      "category": "Technology",
+      "enabled": true
+    },
+    {
+      "id": "service-status",
+      "title": "Service Status",
+      "category": "Technology",
+      "enabled": true
+    },
+    {
+      "id": "tech-readiness",
+      "title": "Tech Readiness",
+      "category": "Technology",
+      "enabled": true
+    },
+    {
+      "id": "insights",
+      "title": "AI Insights",
+      "category": "Technology",
+      "enabled": true
+    }
+  ]
+}

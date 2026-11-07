@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="suvidha_canvas">#F5F7F5</color>
+    <style name="Theme.GodsEyeNative" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/suvidha_canvas</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>

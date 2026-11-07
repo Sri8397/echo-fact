@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">ภาษา</string>
+    <string name="settings_map_provider">ผู้ให้บริการไทล์แผนที่</string>
+    <string name="settings_map_theme">ธีมแผนที่</string>
+    <string name="settings_globe_preset">พรีเซ็ตภาพ</string>
+    <string name="settings_theater_presets">พรีเซ็ตการครอบคลุม</string>
+    <string name="settings_stream_quality">คุณภาพวิดีโอ</string>
+    <string name="settings_stream_idle_stop">หยุดวิดีโอสดเมื่อไม่มีกิจกรรม</string>
+</resources>

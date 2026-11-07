@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">Мова</string>
+    <string name="settings_map_provider">Постачальник карткових плиток</string>
+    <string name="settings_map_theme">Тема карти</string>
+    <string name="settings_globe_preset">Візуальна схема</string>
+    <string name="settings_theater_presets">Прапори охоплення</string>
+    <string name="settings_stream_quality">Якість відео</string>
+    <string name="settings_stream_idle_stop">Зупинити пряму трансляцію відео при бездіяльності</string>
+</resources>

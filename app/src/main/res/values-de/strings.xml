@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">Sprache</string>
+    <string name="settings_map_provider">Karten-Tile-Anbieter</string>
+    <string name="settings_map_theme">Karten-Design</string>
+    <string name="settings_globe_preset">Visuelle Voreinstellung</string>
+    <string name="settings_theater_presets">Abdeckungs-Voreinstellungen</string>
+    <string name="settings_stream_quality">Videoqualität</string>
+    <string name="settings_stream_idle_stop">Live-Video bei Inaktivität stoppen</string>
+</resources>

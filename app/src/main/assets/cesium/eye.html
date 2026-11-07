@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.123/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.123/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <style>
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+    #map { position: fixed; inset: 0; }
+    .cesium-viewer-bottom { transform: scale(0.75); transform-origin: bottom left; bottom: 4px; }
+    /* Nadir reticle: marks the point straight below the satellite while following. */
+    #reticle { position: fixed; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px;
+      border: 1.5px solid rgba(110, 231, 183, 0.85); border-radius: 50%; pointer-events: none; z-index: 5; }
+    #reticle::before, #reticle::after { content: ''; position: absolute; background: rgba(110, 231, 183, 0.85); }
+    #reticle::before { left: 50%; top: -10px; bottom: -10px; width: 1.5px; margin-left: -0.75px; }
+    #reticle::after { top: 50%; left: -10px; right: -10px; height: 1.5px; margin-top: -0.75px; }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+<div id="reticle" aria-hidden="true"></div>
+<script>
+// Satellite eye: the Earth as seen from a tracked satellite. Kotlin bridge: window.Android (SatelliteEyeView.kt).
+// The camera rides the satellite's sub-point along the same motion model as the map marker. Pinch zooms,
+// one-finger drag swings the view around the point below, two-finger drag tilts. "Free" releases the camera.
+(async function () {
+  const bridge = window.Android;
+  try {
+    const sat = JSON.parse(bridge.satellite());
+    // Defaults mirror SatelliteObservation, so a missing field never turns a position into NaN.
+    sat.initialPhaseDeg = Number.isFinite(sat.initialPhaseDeg) ? sat.initialPhaseDeg : 0;
+    sat.initialEpochSeconds = Number.isFinite(sat.initialEpochSeconds) ? sat.initialEpochSeconds : 1793980000;
+    if (!(sat.periodMinutes > 0) || !Number.isFinite(sat.inclinationDeg) || !(sat.altitudeKm > 0)) {
+      throw new Error('Orbit data missing for ' + sat.name);
+    }
+    const imageryDate = bridge.imageryDate();
+
+    const viewer = new Cesium.Viewer('map', {
+      animation: false, timeline: false, baseLayerPicker: false, geocoder: false, homeButton: false,
+      sceneModePicker: false, navigationHelpButton: false, fullscreenButton: false, infoBox: false,
+      selectionIndicator: false,
+      baseLayer: new Cesium.ImageryLayer(new Cesium.UrlTemplateImageryProvider({
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        maximumLevel: 19, credit: 'Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+      })),
+    });
+    const scene = viewer.scene;
+    const camera = viewer.camera;
+    viewer.targetFrameRate = 30;
+    scene.postProcessStages.fxaa.enabled = false;
+    scene.globe.maximumScreenSpaceError = 3;
+    scene.globe.tileCacheSize = 300;
+    scene.backgroundColor = Cesium.Color.BLACK;
+    scene.skyAtmosphere.show = true;
+    scene.globe.showGroundAtmosphere = true;
+    // Real sun position for the current moment, so the night side is where it is right now.
+    scene.globe.enableLighting = true;
+    scene.globe.dynamicAtmosphereLighting = true;
+    scene.globe.dynamicAtmosphereLightingFromSun = true;
+    viewer.clock.currentTime = Cesium.JulianDate.now();
+    viewer.clock.clockStep = Cesium.ClockStep.SYSTEM_CLOCK;
+    viewer.clock.shouldAnimate = true;
+
+    // Latest full day of NASA NOAA-21 VIIRS true colour (~375 m). It fades out as you zoom in past its
+    // resolution, leaving the sharp basemap. City lights (Black Marble) show on the night side only.
+    const gibs = (layer, date, matrix, ext) => new Cesium.UrlTemplateImageryProvider({
+      url: 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/' + layer + '/default/' + date + '/' + matrix + '/{z}/{y}/{x}.' + ext,
+      maximumLevel: matrix.endsWith('9') ? 9 : 8, credit: 'NASA GIBS / ' + layer.split('_').slice(0, 2).join(' '),
+    });
+    const today = viewer.imageryLayers.addImageryProvider(
+      gibs('VIIRS_NOAA21_CorrectedReflectance_TrueColor', imageryDate, 'GoogleMapsCompatible_Level9', 'jpg'));
+    const lights = viewer.imageryLayers.addImageryProvider(
+      gibs('VIIRS_Black_Marble', '2016-01-01', 'GoogleMapsCompatible_Level8', 'png'));
+    lights.dayAlpha = 0.0;
+    lights.nightAlpha = 1.0;
+    let showToday = true;
+
+    const ctl = scene.screenSpaceCameraController;
+    ctl.minimumZoomDistance = 300;
+    ctl.maximumZoomDistance = 45000000;
+
+    // ---- Orbit model: same as SatelliteMotion.kt -------------------------------------------------
+    const R2D = 180 / Math.PI, D2R = Math.PI / 180;
+    function subPoint(t) {
+      const period = Math.max(sat.periodMinutes * 60, 60);
+      const n = 2 * Math.PI / period;
+      const elapsed = t - sat.initialEpochSeconds;
+      const m = (sat.initialPhaseDeg || 0) * D2R + n * elapsed;
+      const inc = sat.inclinationDeg * D2R;
+      const lat = Math.asin(Math.max(-1, Math.min(1, Math.sin(inc) * Math.sin(m)))) * R2D;
+      const inPlane = Math.atan2(Math.cos(inc) * Math.sin(m), Math.cos(m)) * R2D;
+      const earthRot = ((elapsed * 360) / 86164.1) % 360;
+      const raw = (sat.initialPhaseDeg || 0) + inPlane - earthRot;
+      return { lat, lng: ((raw % 360) + 540) % 360 - 180 };
+    }
+    const nowS = () => Date.now() / 1000;
+    const altM = Math.max(sat.altitudeKm, 1) * 1000;
+
+    // Ground track: one orbit either side of now, redrawn every 30 s as the Earth turns under it.
+    const track = viewer.entities.add({ polyline: {
+      positions: [], width: 1.5, arcType: Cesium.ArcType.GEODESIC,
+      material: new Cesium.ColorMaterialProperty(Cesium.Color.fromCssColorString('#6ee7b7').withAlpha(0.6)),
+    } });
+    function drawTrack() {
+      const t = nowS(), period = sat.periodMinutes * 60, pts = [];
+      for (let i = -60; i <= 60; i++) {
+        const p = subPoint(t + (i / 60) * period);
+        pts.push(Cesium.Cartesian3.fromDegrees(p.lng, p.lat, 0));
+      }
+      track.polyline.positions = pts;
+    }
+    drawTrack();
+    setInterval(drawTrack, 30000);
+
+    // ---- Follow camera ------------------------------------------------------------------------
+    // Following keeps the camera's pose fixed in the local frame of the point below the satellite and
+    // moves that frame every frame, so the user's zoom and swing survive while the ground slides past.
+    let follow = true;
+    const enu = (p) => Cesium.Transforms.eastNorthUpToFixedFrame(Cesium.Cartesian3.fromDegrees(p.lng, p.lat, 0));
+    function lockOn() {
+      const p = subPoint(nowS());
+      camera.lookAt(Cesium.Cartesian3.fromDegrees(p.lng, p.lat, 0), new Cesium.HeadingPitchRange(0, -Math.PI / 2 + 0.0001, altM));
+    }
+    const pos = new Cesium.Cartesian3(), dir = new Cesium.Cartesian3(), up = new Cesium.Cartesian3();
+    scene.preUpdate.addEventListener(() => {
+      if (!follow) return;
+      Cesium.Cartesian3.clone(camera.position, pos);
+      Cesium.Cartesian3.clone(camera.direction, dir);
+      Cesium.Cartesian3.clone(camera.up, up);
+      camera.lookAtTransform(enu(subPoint(nowS())));
+      Cesium.Cartesian3.clone(pos, camera.position);
+      Cesium.Cartesian3.clone(dir, camera.direction);
+      Cesium.Cartesian3.clone(up, camera.up);
+      Cesium.Cartesian3.cross(camera.direction, camera.up, camera.right);
+    });
+    const reticle = document.getElementById('reticle');
+
+    window.setFollow = (on) => {
+      follow = !!on;
+      reticle.style.display = follow ? 'block' : 'none';
+      if (follow) lockOn(); else camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+    };
+    window.recenter = () => { window.setFollow(true); bridge.onFollow(true); };
+    window.zoom = (factor) => {
+      // factor < 1 zooms in. Distance to the point below while following, else to the ground.
+      const d = follow ? Cesium.Cartesian3.magnitude(camera.position) : camera.positionCartographic.height;
+      const delta = d * (1 - factor);
+      if (delta > 0) camera.zoomIn(Math.min(delta, d - ctl.minimumZoomDistance));
+      else camera.zoomOut(Math.min(-delta, ctl.maximumZoomDistance - d));
+    };
+    window.setToday = (on) => { showToday = !!on; };
+
+    // Fade the 375 m daily layer out below ~600 km so zooming in gets the sharp basemap.
+    let lastReport = 0;
+    scene.postRender.addEventListener(() => {
+      const h = camera.positionCartographic.height;
+      today.show = showToday;
+      today.alpha = Math.max(0, Math.min(1, (h - 150000) / 450000));
+      const t = performance.now();
+      if (t - lastReport > 500) { lastReport = t; bridge.onView(h); }
+    });
+
+    // Dragging releases the lock only in free mode; while following, gestures orbit the nadir point.
+    lockOn();
+    bridge.onReady();
+  } catch (e) {
+    bridge.onError(String(e && e.message || e));
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">Taal</string>
+    <string name="settings_map_provider">Kaarttegel-provider</string>
+    <string name="settings_map_theme">Kaartthema</string>
+    <string name="settings_globe_preset">Visuele voorinstelling</string>
+    <string name="settings_theater_presets">Dekkingspresets</string>
+    <string name="settings_stream_quality">Videokwaliteit</string>
+    <string name="settings_stream_idle_stop">Livevideostream stoppen bij inactiviteit</string>
+</resources>

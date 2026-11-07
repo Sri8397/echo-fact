@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">Limba</string>
+    <string name="settings_map_provider">Furnizor de dale hartă</string>
+    <string name="settings_map_theme">Tema hărții</string>
+    <string name="settings_globe_preset">Presetare vizuală</string>
+    <string name="settings_theater_presets">Preseturi de acoperire</string>
+    <string name="settings_stream_quality">Calitate video</string>
+    <string name="settings_stream_idle_stop">Oprește video live când este inactiv</string>
+</resources>

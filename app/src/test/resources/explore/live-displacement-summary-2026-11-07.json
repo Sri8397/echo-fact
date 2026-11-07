@@ -1,0 +1,481 @@
+{
+ "summary": {
+  "year": 2025,
+  "globalTotals": {
+   "refugees": 28461306,
+   "asylumSeekers": 8998097,
+   "idps": 64239352,
+   "stateless": 4477220,
+   "total": 106175975
+  },
+  "countries": [
+   {
+    "code": "SDN",
+    "name": "Sudan",
+    "refugees": 2820737,
+    "asylumSeekers": 940297,
+    "idps": 9139309,
+    "stateless": 0,
+    "totalDisplaced": 12900343,
+    "hostRefugees": 809816,
+    "hostAsylumSeekers": 50147,
+    "hostTotal": 859963,
+    "location": {
+     "latitude": 15.5,
+     "longitude": 32.5
+    }
+   },
+   {
+    "code": "SYR",
+    "name": "Syrian Arab Rep.",
+    "refugees": 4865764,
+    "asylumSeekers": 154355,
+    "idps": 5542227,
+    "stateless": 0,
+    "totalDisplaced": 10562346,
+    "hostRefugees": 9885,
+    "hostAsylumSeekers": 4144,
+    "hostTotal": 14029,
+    "location": {
+     "latitude": 35,
+     "longitude": 38
+    }
+   },
+   {
+    "code": "UKR",
+    "name": "Ukraine",
+    "refugees": 5224131,
+    "asylumSeekers": 26583,
+    "idps": 3712000,
+    "stateless": 0,
+    "totalDisplaced": 8962714,
+    "hostRefugees": 2370,
+    "hostAsylumSeekers": 443,
+    "hostTotal": 2813,
+    "location": {
+     "latitude": 48.4,
+     "longitude": 31.2
+    }
+   },
+   {
+    "code": "COL",
+    "name": "Colombia",
+    "refugees": 79669,
+    "asylumSeekers": 303273,
+    "idps": 7157716,
+    "stateless": 0,
+    "totalDisplaced": 7540658,
+    "hostRefugees": 1464,
+    "hostAsylumSeekers": 17421,
+    "hostTotal": 18885,
+    "location": {
+     "latitude": 4.6,
+     "longitude": -74.1
+    }
+   },
+   {
+    "code": "COD",
+    "name": "Dem. Rep. of the Congo",
+    "refugees": 1176489,
+    "asylumSeekers": 168421,
+    "idps": 5669479,
+    "stateless": 0,
+    "totalDisplaced": 7014389,
+    "hostRefugees": 503732,
+    "hostAsylumSeekers": 100112,
+    "hostTotal": 603844,
+    "location": {
+     "latitude": -4,
+     "longitude": 21.8
+    }
+   },
+   {
+    "code": "AFG",
+    "name": "Afghanistan",
+    "refugees": 2671560,
+    "asylumSeekers": 270007,
+    "idps": 3199023,
+    "stateless": 0,
+    "totalDisplaced": 6140590,
+    "hostRefugees": 20869,
+    "hostAsylumSeekers": 382,
+    "hostTotal": 21251,
+    "location": {
+     "latitude": 33.9,
+     "longitude": 67.7
+    }
+   },
+   {
+    "code": "MMR",
+    "name": "Myanmar",
+    "refugees": 1524378,
+    "asylumSeekers": 67824,
+    "idps": 3628840,
+    "stateless": 0,
+    "totalDisplaced": 5221042,
+    "hostRefugees": 0,
+    "hostAsylumSeekers": 0,
+    "hostTotal": 0,
+    "location": {
+     "latitude": 19.8,
+     "longitude": 96.7
+    }
+   },
+   {
+    "code": "YEM",
+    "name": "Yemen",
+    "refugees": 57327,
+    "asylumSeekers": 25860,
+    "idps": 4795983,
+    "stateless": 0,
+    "totalDisplaced": 4879170,
+    "hostRefugees": 49107,
+    "hostAsylumSeekers": 14642,
+    "hostTotal": 63749,
+    "location": {
+     "latitude": 15.6,
+     "longitude": 48.5
+    }
+   },
+   {
+    "code": "XXA",
+    "name": "Stateless",
+    "refugees": 34736,
+    "asylumSeekers": 3934,
+    "idps": 0,
+    "stateless": 4477220,
+    "totalDisplaced": 4515890,
+    "hostRefugees": 0,
+    "hostAsylumSeekers": 0,
+    "hostTotal": 0
+   },
+   {
+    "code": "SOM",
+    "name": "Somalia",
+    "refugees": 892037,
+    "asylumSeekers": 236271,
+    "idps": 3347408,
+    "stateless": 0,
+    "totalDisplaced": 4475716,
+    "hostRefugees": 20967,
+    "hostAsylumSeekers": 25702,
+    "hostTotal": 46669,
+    "location": {
+     "latitude": 5.2,
+     "longitude": 46.2
+    }
+   },
+   {
+    "code": "USA",
+    "name": "United States of America",
+    "refugees": 3667,
+    "asylumSeekers": 3779,
+    "idps": 0,
+    "stateless": 0,
+    "totalDisplaced": 7446,
+    "hostRefugees": 457647,
+    "hostAsylumSeekers": 3718945,
+    "hostTotal": 4176592,
+    "location": {
+     "latitude": 37.1,
+     "longitude": -95.7
+    }
+   },
+   {
+    "code": "NGA",
+    "name": "Nigeria",
+    "refugees": 478150,
+    "asylumSeekers": 56176,
+    "idps": 3544519,
+    "stateless": 0,
+    "totalDisplaced": 4078845,
+    "hostRefugees": 123848,
+    "hostAsylumSeekers": 18192,
+    "hostTotal": 142040,
+    "location": {
+     "latitude": 9.1,
+     "longitude": 7.5
+    }
+   },
+   {
+    "code": "SSD",
+    "name": "South Sudan",
+    "refugees": 2386499,
+    "asylumSeekers": 123984,
+    "idps": 1277527,
+    "stateless": 0,
+    "totalDisplaced": 3788010,
+    "hostRefugees": 601818,
+    "hostAsylumSeekers": 3246,
+    "hostTotal": 605064,
+    "location": {
+     "latitude": 6.9,
+     "longitude": 31.3
+    }
+   },
+   {
+    "code": "DEU",
+    "name": "Germany",
+    "refugees": 327,
+    "asylumSeekers": 626,
+    "idps": 0,
+    "stateless": 0,
+    "totalDisplaced": 953,
+    "hostRefugees": 2655191,
+    "hostAsylumSeekers": 297503,
+    "hostTotal": 2952694,
+    "location": {
+     "latitude": 51.2,
+     "longitude": 10.4
+    }
+   },
+   {
+    "code": "ETH",
+    "name": "Ethiopia",
+    "refugees": 164215,
+    "asylumSeekers": 148616,
+    "idps": 2378000,
+    "stateless": 0,
+    "totalDisplaced": 2690831,
+    "hostRefugees": 1010466,
+    "hostAsylumSeekers": 112987,
+    "hostTotal": 1123453,
+    "location": {
+     "latitude": 9.1,
+     "longitude": 40.5
+    }
+   },
+   {
+    "code": "TUR",
+    "name": "Türkiye",
+    "refugees": 149405,
+    "asylumSeekers": 117576,
+    "idps": 0,
+    "stateless": 0,
+    "totalDisplaced": 266981,
+    "hostRefugees": 2390414,
+    "hostAsylumSeekers": 102497,
+    "hostTotal": 2492911,
+    "location": {
+     "latitude": 39.9,
+     "longitude": 32.9
+    }
+   },
+   {
+    "code": "BFA",
+    "name": "Burkina Faso",
+    "refugees": 351209,
+    "asylumSeekers": 69817,
+    "idps": 2062534,
+    "stateless": 0,
+    "totalDisplaced": 2483560,
+    "hostRefugees": 40996,
+    "hostAsylumSeekers": 1957,
+    "hostTotal": 42953,
+    "location": {
+     "latitude": 12.3,
+     "longitude": -1.6
+    }
+   },
+   {
+    "code": "UGA",
+    "name": "Uganda",
+    "refugees": 12792,
+    "asylumSeekers": 11401,
+    "idps": 0,
+    "stateless": 0,
+    "totalDisplaced": 24193,
+    "hostRefugees": 1936719,
+    "hostAsylumSeekers": 35249,
+    "hostTotal": 1971968,
+    "location": {
+     "latitude": 1.4,
+     "longitude": 32.3
+    }
+   },
+   {
+    "code": "HTI",
+    "name": "Haiti",
+    "refugees": 180702,
+    "asylumSeekers": 236318,
+    "idps": 1430903,
+    "stateless": 0,
+    "totalDisplaced": 1847923,
+    "hostRefugees": 0,
+    "hostAsylumSeekers": 0,
+    "hostTotal": 0
+   },
+   {
+    "code": "UNK",
+    "name": "Unknown ",
+    "refugees": 126784,
+    "asylumSeekers": 1572774,
+    "idps": 0,
+    "stateless": 0,
+    "totalDisplaced": 1699558,
+    "hostRefugees": 0,
+    "hostAsylumSeekers": 0,
+    "hostTotal": 0
+   },
+   {
+    "code": "VEN",
+    "name": "Venezuela (Bolivarian Republic of)",
+    "refugees": 417010,
+    "asylumSeekers": 1181156,
+    "idps": 0,
+    "stateless": 0,
+    "totalDisplaced": 1598166,
+    "hostRefugees": 14333,
+    "hostAsylumSeekers": 1577,
+    "hostTotal": 15910,
+    "location": {
+     "latitude": 6.4,
+     "longitude": -66.6
+    }
+   },
+   {
+    "code": "TCD",
+    "name": "Chad",
+    "refugees": 15281,
+    "asylumSeekers": 17111,
+    "idps": 219595,
+    "stateless": 0,
+    "totalDisplaced": 251987,
+    "hostRefugees": 1502263,
+    "hostAsylumSeekers": 9371,
+    "hostTotal": 1511634,
+    "location": {
+     "latitude": 15.5,
+     "longitude": 19
+    }
+   },
+   {
+    "code": "IRQ",
+    "name": "Iraq",
+    "refugees": 270671,
+    "asylumSeekers": 96887,
+    "idps": 997334,
+    "stateless": 0,
+    "totalDisplaced": 1364892,
+    "hostRefugees": 322345,
+    "hostAsylumSeekers": 23366,
+    "hostTotal": 345711,
+    "location": {
+     "latitude": 33.2,
+     "longitude": 43.7
+    }
+   },
+   {
+    "code": "PAK",
+    "name": "Pakistan",
+    "refugees": 90497,
+    "asylumSeekers": 65066,
+    "idps": 0,
+    "stateless": 0,
+    "totalDisplaced": 155563,
+    "hostRefugees": 1159038,
+    "hostAsylumSeekers": 119502,
+    "hostTotal": 1278540,
+    "location": {
+     "latitude": 30.4,
+     "longitude": 69.3
+    }
+   },
+   {
+    "code": "CAF",
+    "name": "Central African Rep.",
+    "refugees": 674222,
+    "asylumSeekers": 82600,
+    "idps": 427479,
+    "stateless": 0,
+    "totalDisplaced": 1184301,
+    "hostRefugees": 55307,
+    "hostAsylumSeekers": 8454,
+    "hostTotal": 63761,
+    "location": {
+     "latitude": 6.6,
+     "longitude": 20.9
+    }
+   },
+   {
+    "code": "CMR",
+    "name": "Cameroon",
+    "refugees": 140366,
+    "asylumSeekers": 37991,
+    "idps": 1004257,
+    "stateless": 0,
+    "totalDisplaced": 1182614,
+    "hostRefugees": 408613,
+    "hostAsylumSeekers": 18553,
+    "hostTotal": 427166,
+    "location": {
+     "latitude": 7.4,
+     "longitude": 12.4
+    }
+   },
+   {
+    "code": "BGD",
+    "name": "Bangladesh",
+    "refugees": 31862,
+    "asylumSeekers": 92441,
+    "idps": 0,
+    "stateless": 0,
+    "totalDisplaced": 124303,
+    "hostRefugees": 1178038,
+    "hostAsylumSeekers": 67,
+    "hostTotal": 1178105,
+    "location": {
+     "latitude": 23.7,
+     "longitude": 90.4
+    }
+   },
+   {
+    "code": "EGY",
+    "name": "Egypt",
+    "refugees": 23763,
+    "asylumSeekers": 46292,
+    "idps": 0,
+    "stateless": 0,
+    "totalDisplaced": 70055,
+    "hostRefugees": 220033,
+    "hostAsylumSeekers": 878268,
+    "hostTotal": 1098301,
+    "location": {
+     "latitude": 26.8,
+     "longitude": 30.8
+    }
+   },
+   {
+    "code": "POL",
+    "name": "Poland",
+    "refugees": 1368,
+    "asylumSeekers": 407,
+    "idps": 0,
+    "stateless": 0,
+    "totalDisplaced": 1775,
+    "hostRefugees": 990469,
+    "hostAsylumSeekers": 13848,
+    "hostTotal": 1004317
+   },
+   {
+    "code": "MLI",
+    "name": "Mali",
+    "refugees": 519738,
+    "asylumSeekers": 23629,
+    "idps": 414524,
+    "stateless": 0,
+    "totalDisplaced": 957891,
+    "hostRefugees": 286715,
+    "hostAsylumSeekers": 322,
+    "hostTotal": 287037,
+    "location": {
+     "latitude": 17.6,
+     "longitude": -4
+    }
+   }
+  ],
+  "topFlows": []
+ },
+ "fetchedAt": 1793966545607,
+ "dataAvailable": true
+}

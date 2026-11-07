@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">زبان</string>
+    <string name="settings_map_provider">ارائه‌دهنده کاشی نقشه</string>
+    <string name="settings_map_theme">پوسته نقشه</string>
+    <string name="settings_globe_preset">پیش‌تنظیم بصری</string>
+    <string name="settings_theater_presets">پیش‌تنظیم‌های پوشش</string>
+    <string name="settings_stream_quality">کیفیت ویدئو</string>
+    <string name="settings_stream_idle_stop">توقف ویدیوی زنده هنگام عدم فعالیت</string>
+</resources>

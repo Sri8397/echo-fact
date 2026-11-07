@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">Язык</string>
+    <string name="settings_map_provider">Поставщик тайлов карты</string>
+    <string name="settings_map_theme">Тема карты</string>
+    <string name="settings_globe_preset">Визуальный пресет</string>
+    <string name="settings_theater_presets">Пакеты покрытия</string>
+    <string name="settings_stream_quality">Качество видео</string>
+    <string name="settings_stream_idle_stop">Остановить прямую трансляцию при неактивности</string>
+</resources>

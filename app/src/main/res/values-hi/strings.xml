@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">भाषा</string>
+    <string name="settings_map_provider">मैप टाइल प्रदाता</string>
+    <string name="settings_map_theme">मैप थीम</string>
+    <string name="settings_globe_preset">दृश्य प्राथमिकता</string>
+    <string name="settings_theater_presets">कवरेज प्रीसेट</string>
+    <string name="settings_stream_quality">वीडियो गुणवत्ता</string>
+    <string name="settings_stream_idle_stop">निष्क्रियता पर लाइव वीडियो रोकें</string>
+</resources>

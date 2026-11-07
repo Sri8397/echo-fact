@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">Język</string>
+    <string name="settings_map_provider">Dostawca kafelków mapy</string>
+    <string name="settings_map_theme">Motyw mapy</string>
+    <string name="settings_globe_preset">Ustawienie wizualne</string>
+    <string name="settings_theater_presets">Presety zasięgu</string>
+    <string name="settings_stream_quality">Jakość wideo</string>
+    <string name="settings_stream_idle_stop">Zatrzymaj transmisję live gdy nieaktywna</string>
+</resources>

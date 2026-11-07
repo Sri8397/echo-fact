@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">Език</string>
+    <string name="settings_map_provider">Доставчик на карти</string>
+    <string name="settings_map_theme">Тема на картата</string>
+    <string name="settings_globe_preset">Визуален предварителен набор</string>
+    <string name="settings_theater_presets">Пакети за покритие</string>
+    <string name="settings_stream_quality">Качество на видеото</string>
+    <string name="settings_stream_idle_stop">Спиране на живото видео при неактивност</string>
+</resources>

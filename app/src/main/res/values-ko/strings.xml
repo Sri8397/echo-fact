@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">언어</string>
+    <string name="settings_map_provider">지도 타일 제공자</string>
+    <string name="settings_map_theme">지도 테마</string>
+    <string name="settings_globe_preset">시각적 프리셋</string>
+    <string name="settings_theater_presets">커버리지 프리셋</string>
+    <string name="settings_stream_quality">영상 품질</string>
+    <string name="settings_stream_idle_stop">유휴 상태일 때 라이브 영상 중지</string>
+</resources>

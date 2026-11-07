@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">Språk</string>
+    <string name="settings_map_provider">Kartpanel-leverantör</string>
+    <string name="settings_map_theme">Karttema</string>
+    <string name="settings_globe_preset">Visuell förinställning</string>
+    <string name="settings_theater_presets">Täckningspaket</string>
+    <string name="settings_stream_quality">Videokvalitet</string>
+    <string name="settings_stream_idle_stop">Stoppa livevideo när inaktiv</string>
+</resources>

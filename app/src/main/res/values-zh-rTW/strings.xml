@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">語言</string>
+    <string name="settings_map_provider">地圖圖塊提供者</string>
+    <string name="settings_map_theme">地圖主題</string>
+    <string name="settings_globe_preset">視覺預設</string>
+    <string name="settings_theater_presets">覆蓋預設</string>
+    <string name="settings_stream_quality">影片畫質</string>
+    <string name="settings_stream_idle_stop">空閒時停止即時影片</string>
+</resources>

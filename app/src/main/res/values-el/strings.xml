@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">Γλώσσα</string>
+    <string name="settings_map_provider">Πάροχος πλακιδίων χάρτη</string>
+    <string name="settings_map_theme">Θέμα χάρτη</string>
+    <string name="settings_globe_preset">Οπτική προεπιλογή</string>
+    <string name="settings_theater_presets">Προρυθμίσεις κάλυψης</string>
+    <string name="settings_stream_quality">Ποιότητα Βίντεο</string>
+    <string name="settings_stream_idle_stop">Διακοπή ζωντανού βίντεο όταν είναι αδρανές</string>
+</resources>

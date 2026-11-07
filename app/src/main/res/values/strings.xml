@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">Language</string>
+    <string name="settings_map_provider">Map Tile Provider</string>
+    <string name="settings_map_theme">Map Theme</string>
+    <string name="settings_globe_preset">Visual Preset</string>
+    <string name="settings_theater_presets">Coverage presets</string>
+    <string name="settings_stream_quality">Video Quality</string>
+    <string name="settings_stream_idle_stop">Stop live video when idle</string>
+</resources>

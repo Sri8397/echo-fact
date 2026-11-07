@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">Jazyk</string>
+    <string name="settings_map_provider">Poskytovatel dlaždic mapy</string>
+    <string name="settings_map_theme">Motiv mapy</string>
+    <string name="settings_globe_preset">Vizuální předvolba</string>
+    <string name="settings_theater_presets">Balíčky pokrytí</string>
+    <string name="settings_stream_quality">Kvalita videa</string>
+    <string name="settings_stream_idle_stop">Zastavit živé video při nečinnosti</string>
+</resources>

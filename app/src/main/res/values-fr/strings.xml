@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">Langue</string>
+    <string name="settings_map_provider">Fournisseur de tuiles</string>
+    <string name="settings_map_theme">Thème de carte</string>
+    <string name="settings_globe_preset">Préréglage visuel</string>
+    <string name="settings_theater_presets">Packs de couverture</string>
+    <string name="settings_stream_quality">Qualité vidéo</string>
+    <string name="settings_stream_idle_stop">Arrêter la vidéo en direct en cas d\'inactivité</string>
+</resources>

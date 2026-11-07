@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">Idioma</string>
+    <string name="settings_map_provider">Provedor de tiles do mapa</string>
+    <string name="settings_map_theme">Tema do mapa</string>
+    <string name="settings_globe_preset">Predefinição visual</string>
+    <string name="settings_theater_presets">Predefinições de cobertura</string>
+    <string name="settings_stream_quality">Qualidade de vídeo</string>
+    <string name="settings_stream_idle_stop">Pausar vídeo ao vivo quando inativo</string>
+</resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">言語</string>
+    <string name="settings_map_provider">マップタイルプロバイダー</string>
+    <string name="settings_map_theme">マップテーマ</string>
+    <string name="settings_globe_preset">ビジュアルプリセット</string>
+    <string name="settings_theater_presets">カバレッジプリセット</string>
+    <string name="settings_stream_quality">動画画質</string>
+    <string name="settings_stream_idle_stop">アイドル時にライブ動画を停止</string>
+</resources>

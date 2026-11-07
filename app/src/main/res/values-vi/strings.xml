@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">Ngôn ngữ</string>
+    <string name="settings_map_provider">Nhà cung cấp bản đồ</string>
+    <string name="settings_map_theme">Giao diện bản đồ</string>
+    <string name="settings_globe_preset">Cài đặt trước hình ảnh</string>
+    <string name="settings_theater_presets">Gói phủ khu vực</string>
+    <string name="settings_stream_quality">Chất lượng Video</string>
+    <string name="settings_stream_idle_stop">Dừng video trực tiếp khi không hoạt động</string>
+</resources>

@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.123/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.123/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <style>
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #02050b; }
+    /* Pinned to the viewport: percent heights resolved to 0 inside the Android WebView, hiding the globe. */
+    #map { position: fixed; inset: 0; }
+    .cesium-viewer-bottom { transform: scale(0.8); transform-origin: bottom left; }
+    /* Anchored card for the selected marker. Positioned from JS on every render; hidden until a marker is selected. */
+    /* Storm overlay: rain streaks and lightning flashes over the globe, never catching taps. */
+    #rain, #flash { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+    #rain { width: 100%; height: 100%; display: none; }
+    #flash { background: #e8f0ff; opacity: 0; }
+    #callout {
+      position: fixed; display: none; box-sizing: border-box; width: 232px; padding: 10px 12px 10px;
+      background: rgba(255, 255, 255, 0.97); color: #0d1b26; border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35); font: 13px/1.35 system-ui, -apple-system, sans-serif; z-index: 10;
+    }
+    #callout .co-close { position: absolute; top: 2px; right: 6px; border: 0; background: none; font-size: 18px; color: #5b6b78; padding: 2px 6px; }
+    #callout .co-layer { font-size: 10px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; }
+    #callout .co-title { font-size: 14px; font-weight: 700; margin: 3px 16px 4px 0; }
+    #callout .co-meta { color: #5b6b78; font-size: 11px; }
+    #callout .co-fact { margin-top: 6px; font-size: 12px; }
+    #callout .co-actions { display: flex; gap: 8px; margin-top: 8px; }
+    #callout button.co-btn { font: inherit; font-size: 12px; font-weight: 700; border: 0; border-radius: 999px; padding: 6px 14px; }
+    #co-details { background: #1b7f5b; color: #ffffff; }
+    #co-save { background: #e6edf2; color: #0d1b26; }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+<canvas id="rain" aria-hidden="true"></canvas>
+<div id="flash" aria-hidden="true"></div>
+<div id="callout" role="dialog" aria-label="Selected signal">
+  <button class="co-close" id="co-close" aria-label="Close">&times;</button>
+  <div class="co-layer" id="co-layer"></div>
+  <div class="co-title" id="co-title"></div>
+  <div class="co-meta" id="co-meta"></div>
+  <div class="co-fact" id="co-fact"></div>
+  <div class="co-actions">
+    <button class="co-btn" id="co-details">Details</button>
+    <button class="co-btn" id="co-save">Save</button>
+  </div>
+</div>
+<script>
+(async function () {
+  // Kotlin bridge: window.Android (see CesiumMap.kt). If Cesium.js fails to download,
+  // the first Cesium reference throws and the catch below reports it to Kotlin.
+  const bridge = window.Android;
+  const token = bridge.ionToken();
+  if (token) Cesium.Ion.defaultAccessToken = token;
+
+  const options = {
+    animation: false, timeline: false, baseLayerPicker: false, geocoder: false,
+    homeButton: false, sceneModePicker: false, navigationHelpButton: false,
+    fullscreenButton: false, infoBox: false, selectionIndicator: false,
+    requestRenderMode: true, maximumRenderTimeChange: Infinity,
+  };
+  if (token) {
+    options.terrain = Cesium.Terrain.fromWorldTerrain();
+  } else {
+    // No ion token: Esri World Imagery on a smooth ellipsoid. Credit text is shown by Cesium's credit bar.
+    options.baseLayer = new Cesium.ImageryLayer(new Cesium.UrlTemplateImageryProvider({
+      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      maximumLevel: 19,
+      credit: 'Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+    }));
+  }
+  const viewer = new Cesium.Viewer('map', options);
+  const scene = viewer.scene;
+  // Phone tuning: slightly coarser tiles (fewer to fetch and draw), a larger tile cache so panning back is
+  // instant, no full-screen anti-aliasing pass, and no sibling preloading.
+  scene.globe.maximumScreenSpaceError = 3;
+  scene.globe.tileCacheSize = 300;
+  scene.globe.preloadSiblings = false;
+  scene.postProcessStages.fxaa.enabled = false;
+  scene.fog.screenSpaceErrorFactor = 4; // drop detail faster in the hazy distance of tilted views
+  scene.globe.enableLighting = false;
+  scene.skyAtmosphere.show = true;
+  scene.fog.enabled = true;
+
+  let darkTheme = false;
+  let imageryStyle = 'auto';
+  // Photo imagery is dimmed for the dark theme; drawn maps (streets, dark, light, topo) keep their own colours.
+  const isPhotoStyle = (style) => style === 'auto' || style === 'esri' || style === 'hybrid';
+  function applyTheme() {
+    const bg = darkTheme ? '#02050b' : '#cfe4f5';
+    scene.backgroundColor = Cesium.Color.fromCssColorString(bg);
+    document.body.style.background = bg;
+    const base = viewer.imageryLayers.length ? viewer.imageryLayers.get(0) : null;
+    if (base && !isPhotoStyle(imageryStyle)) {
+      base.brightness = 1.0;
+      base.saturation = 1.0;
+      base.contrast = 1.0;
+    } else if (base) {
+      base.brightness = darkTheme ? 0.55 : 1.0;
+      base.saturation = darkTheme ? 0.6 : 1.0;
+      base.contrast = darkTheme ? 1.1 : 1.0;
+    }
+    scene.requestRender();
+  }
+  // Re-apply when an async (ion) base layer is added after startup.
+  viewer.imageryLayers.layerAdded.addEventListener(applyTheme);
+  applyTheme();
+
+  // ---- Map styles --------------------------------------------------------------------------------
+  // The base imagery is swappable (Kotlin: setImageryStyle). 'auto' keeps the startup imagery: Cesium ion
+  // aerial with a token, else Esri World Imagery. Each style names its own credit, shown in Cesium's credit bar.
+  const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/';
+  const ESRI_CREDIT = 'Esri, Maxar, Earthstar Geographics, and the GIS User Community';
+  const CARTO_CREDIT = '© OpenStreetMap contributors © CARTO';
+  const esriLayer = (service, credit) => new Cesium.UrlTemplateImageryProvider({
+    url: ESRI + service + '/MapServer/tile/{z}/{y}/{x}', maximumLevel: 19, credit: credit || ESRI_CREDIT,
+  });
+  const cartoLayer = (name) => new Cesium.UrlTemplateImageryProvider({
+    url: 'https://{s}.basemaps.cartocdn.com/' + name + '/{z}/{x}/{y}.png', subdomains: 'abcd',
+    maximumLevel: 19, credit: CARTO_CREDIT,
+  });
+  const startupBase = viewer.imageryLayers.length ? viewer.imageryLayers.get(0) : null;
+  let styleLayers = []; // layers added by the current style (base and any label overlay)
+  async function baseFor(style) {
+    switch (style) {
+      case 'esri': return new Cesium.ImageryLayer(esriLayer('World_Imagery'));
+      case 'hybrid':
+        if (token) return Cesium.ImageryLayer.fromProviderAsync(Cesium.IonImageryProvider.fromAssetId(3)); // aerial with labels
+        return new Cesium.ImageryLayer(esriLayer('World_Imagery'));
+      case 'streets': return new Cesium.ImageryLayer(esriLayer('World_Street_Map', 'Esri, HERE, Garmin, OpenStreetMap contributors'));
+      case 'topo': return new Cesium.ImageryLayer(esriLayer('World_Topo_Map', 'Esri, HERE, Garmin, OpenStreetMap contributors, USGS'));
+      case 'dark': return new Cesium.ImageryLayer(cartoLayer('dark_all'));
+      case 'light': return new Cesium.ImageryLayer(cartoLayer('light_all'));
+      default: return null; // auto
+    }
+  }
+  let styleRequest = 0;
+  window.setImageryStyle = async (style) => {
+    style = style || 'auto';
+    if (style === imageryStyle) return;
+    const request = ++styleRequest;
+    const base = await baseFor(style);
+    if (request !== styleRequest) return; // a newer pick arrived while this one loaded
+    for (const l of styleLayers) viewer.imageryLayers.remove(l, true);
+    styleLayers = [];
+    imageryStyle = style;
+    if (base) {
+      viewer.imageryLayers.add(base, 0);
+      styleLayers.push(base);
+      if (style === 'hybrid' && !token) {
+        const labels = new Cesium.ImageryLayer(esriLayer('Reference/World_Boundaries_and_Places'));
+        viewer.imageryLayers.add(labels);
+        styleLayers.push(labels);
+      }
+    }
+    if (startupBase) startupBase.show = !base;
+    applyTheme();
+  };
+
+  // Tile failures (offline, blocked host) are reported once; markers and controls keep working.
+  let imageryReported = false;
+  function watchImagery(layer) {
+    const provider = layer && layer.imageryProvider;
+    if (!provider || !provider.errorEvent) return;
+    provider.errorEvent.addEventListener(() => {
+      if (imageryReported) return;
+      imageryReported = true;
+      bridge.onImageryError();
+    });
+  }
+  for (let i = 0; i < viewer.imageryLayers.length; i++) watchImagery(viewer.imageryLayers.get(i));
+  viewer.imageryLayers.layerAdded.addEventListener(watchImagery);
+
+  const points = scene.primitives.add(new Cesium.PointPrimitiveCollection());
+  const icons = scene.primitives.add(new Cesium.BillboardCollection({ scene: scene }));
+  const labels = scene.primitives.add(new Cesium.LabelCollection({ scene: scene }));
+  let markers = [];
+  let markersById = new Map();
+  let selectedId = null;
+  let clusterCentres = {};
+  let calloutData = null;
+
+  const camera = viewer.camera;
+  const isFlat = () => scene.mode === Cesium.SceneMode.SCENE2D;
+
+  // Flights sit at their reported altitude and satellites at their orbit height, so the view has real depth.
+  // Ground events (unrest, quakes, fires...) sit on the terrain actually drawn under them; a quake's depth is
+  // ignored so it never sinks under the globe. Flat mode stays on the plane.
+  const GROUND_CLEARANCE_M = 3;   // just above the rendered surface so depth testing never hides it
+  const GROUND_UNKNOWN_M = 1000;  // terrain tile under the event not loaded yet: lift it clear until it is
+  const groundById = new Map();   // marker id -> { lat, lng, h } from the rendered terrain
+  function sampleGround(lat, lng) {
+    const h = scene.globe.getHeight(Cesium.Cartographic.fromDegrees(lng, lat));
+    return h === undefined ? undefined : h;
+  }
+  function groundHeight(m) {
+    const g = groundById.get(m.id);
+    if (g && g.lat === m.lat && g.lng === m.lng) return g.h;
+    const h = sampleGround(m.lat, m.lng);
+    if (h !== undefined) groundById.set(m.id, { lat: m.lat, lng: m.lng, h: h });
+    return h;
+  }
+  // Ground events skip the depth test: a billboard is drawn at its anchor's depth, so terrain nearer the
+  // camera would cut off the lower half of an icon resting on the ground. Far-side events are still hidden
+  // by the horizon occluder in updateFrame. Craft keep depth testing so mountains hide low planes.
+  // Aircraft on the ground get the same treatment, so a parked plane is not cut in half by the runway.
+  function depthTestOff(m, flat) {
+    return flat || !isCraft(m) || m.onGround ? Number.POSITIVE_INFINITY : 0;
+  }
+  // Satellites sit at orbit height. Aircraft sit at their reported altitude (GPS when they send it) but never
+  // below the terrain under them; one reported on the ground, or with no altitude, rests on the terrain.
+  function markerHeight(m) {
+    if (isFlat()) return 0;
+    if (m.isSatellite) return Math.max(m.alt || 0, 1000);
+    const h = groundHeight(m);
+    const ground = h === undefined ? undefined : h + GROUND_CLEARANCE_M;
+    if (m.isFlight && !m.onGround && m.alt) return ground === undefined ? m.alt : Math.max(m.alt, ground);
+    return ground === undefined ? GROUND_UNKNOWN_M : ground;
+  }
+  // Tells Kotlin the terrain elevation under the selected aircraft, for its height above ground. Only with
+  // real terrain (an ion token): on the bare ellipsoid every place reads as sea level, which would be wrong.
+  let groundReported = null;
+  function reportGround() {
+    if (!token || isFlat() || !selectedId) return;
+    const m = markersById.get(selectedId);
+    if (!m || !m.isFlight) return;
+    const h = sampleGround(m.lat, m.lng);
+    if (h === undefined) return;
+    const key = m.id + ':' + Math.round(h);
+    if (key === groundReported) return;
+    groundReported = key;
+    bridge.onGroundElevation(m.id, h);
+  }
+  // When terrain finishes loading (finer tiles after a zoom), re-seat ground events on the surface now drawn.
+  scene.globe.tileLoadProgressEvent.addEventListener((queued) => {
+    if (queued !== 0 || isFlat()) return;
+    let moved = false;
+    for (const m of markers) {
+      if (m.isSatellite) continue;
+      const h = sampleGround(m.lat, m.lng);
+      if (h === undefined) continue;
+      const g = groundById.get(m.id);
+      if (g && g.lat === m.lat && g.lng === m.lng && Math.abs(g.h - h) < 1) continue;
+      groundById.set(m.id, { lat: m.lat, lng: m.lng, h: h });
+      m._pos = null; // updateFrame re-places it
+      moved = true;
+    }
+    if (moved) scene.requestRender();
+    reportGround();
+  });
+  // Where the marker is drawn now: its live (gliding) position when it moves, else its fix.
+  function markerPosition(m) {
+    return m._pos || Cesium.Cartesian3.fromDegrees(m.lng, m.lat, markerHeight(m));
+  }
+  // In 3D, a point on the far side of the globe is hidden: its normal faces away from the eye.
+  function facesCamera(pos) {
+    if (isFlat()) return true;
+    const normal = Cesium.Cartesian3.normalize(pos, new Cesium.Cartesian3());
+    const toEye = Cesium.Cartesian3.subtract(camera.positionWC, pos, new Cesium.Cartesian3());
+    return Cesium.Cartesian3.dot(normal, toEye) > 0;
+  }
+
+  // ---- Live motion -------------------------------------------------------------------------------
+  // Kotlin sends a fresh position every few seconds, plus each moving marker's rate in degrees per
+  // second from the same motion model. Between fixes the marker glides along that rate every frame;
+  // a new fix is eased in over BLEND_S instead of jumping. If fixes stop (app paused, reduced motion),
+  // the marker coasts at most MAX_COAST_S and then holds.
+  const MAX_COAST_S = 7; // Kotlin ticks every 5 s (FLIGHT_MOTION_TICK_MS); hold if a tick is late by >2 s
+  const BLEND_S = 0.6;
+  const SNAP_DEG = 0.5; // a bigger correction is a reset (new fix far away): jump there instead of sliding
+  const tracks = new Map(); // id -> { lat, lng, t, rate, offLat, offLng, offStart }
+  const clock = () => performance.now() / 1000;
+  const wrapLng = (lng) => ((lng + 540) % 360) - 180;
+
+  function trackLatLng(tr, t) {
+    let lat = tr.lat;
+    let lng = tr.lng;
+    if (tr.rate) {
+      const dt = Math.min(Math.max(t - tr.t, 0), MAX_COAST_S);
+      lat += tr.rate[0] * dt;
+      lng += tr.rate[1] * dt;
+    }
+    if (tr.offLat || tr.offLng) {
+      const k = 1 - Math.min((t - tr.offStart) / BLEND_S, 1); // 1 -> 0
+      const w = k * k * (3 - 2 * k); // smoothstep
+      lat += tr.offLat * w;
+      lng += tr.offLng * w;
+    }
+    return { lat: Cesium.Math.clamp(lat, -89.9, 89.9), lng: wrapLng(lng) };
+  }
+
+  function updateTrack(m, t) {
+    const prev = tracks.get(m.id);
+    const next = { lat: m.lat, lng: m.lng, t: t, rate: m.rate || null, offLat: 0, offLng: 0, offStart: t };
+    if (prev && (prev.rate || next.rate)) {
+      const shown = trackLatLng(prev, t);
+      const dLat = shown.lat - m.lat;
+      const dLng = wrapLng(shown.lng - m.lng);
+      if (Math.abs(dLat) < SNAP_DEG && Math.abs(dLng) < SNAP_DEG) {
+        next.offLat = dLat;
+        next.offLng = dLng;
+      }
+    }
+    tracks.set(m.id, next);
+  }
+
+  // ---- Perspective -------------------------------------------------------------------------------
+  // Seen from the camera's own eye: craft close to the viewer are drawn larger and distant ones smaller
+  // (square-root falloff, so a crowded horizon stays readable), and far-off craft fade slightly.
+  const BASE_PX = 28;
+  const SELECTED_PX = 34;
+  // Craft use true perspective: on-screen size is inversely proportional to distance from the eye, as for
+  // a real object, so a plane twice as far looks half as big. CRAFT_REF_M is where a craft is drawn at
+  // BASE_PX; the clamp keeps a plane under the camera from filling the screen and a horizon plane visible.
+  const CRAFT_REF_M = 50000;
+  const CRAFT_MIN_SCALE = 0.3;  // ~8 px: far away or the whole globe in view
+  const CRAFT_MAX_SCALE = 3.0;  // ~84 px: right in front of the camera
+  // Event icons are places, not objects in the sky: only a gentle size change so they stay readable.
+  const EVENT_REF_M = 150000;
+  const EVENT_PERSPECTIVE_BELOW_M = 500000;
+  const isCraft = (m) => m.isFlight || m.isSatellite;
+  const CRAFT_FADE = new Cesium.NearFarScalar(3.0e6, 1.0, 2.5e7, 0.55);
+
+  function perspectiveScale(m, pos) {
+    const d = Math.max(isFlat()
+      ? camera.positionCartographic.height
+      : Cesium.Cartesian3.distance(camera.positionWC, pos), 1);
+    if (isCraft(m)) {
+      const s = Cesium.Math.clamp(CRAFT_REF_M / d, CRAFT_MIN_SCALE, CRAFT_MAX_SCALE);
+      return m.id === selectedId ? Math.max(s, 0.9) : s; // the selected craft stays easy to find
+    }
+    // Events: full size in the zoomed-out globe view, but true perspective once you fly low, so a place
+    // hundreds of km away reads as far away instead of sitting in the fields in front of the camera.
+    const s = EVENT_REF_M / d;
+    const low = camera.positionCartographic.height < EVENT_PERSPECTIVE_BELOW_M;
+    if (m.id === selectedId) return Cesium.Math.clamp(s, 1.0, 1.6);
+    return Cesium.Math.clamp(s, low ? 0.3 : 0.75, 1.2);
+  }
+
+  // Nose direction as a flat on-screen rotation: the reported track minus the camera heading. Every
+  // aircraft with the same track is drawn at the same angle, and it only changes when the camera turns.
+  // (Pinning the icon to the local north axis instead skews with perspective in tilted views, so
+  // same-heading planes looked different and appeared to twist as they moved.)
+  function orientFlight(b, m) {
+    const rotation = -(Cesium.Math.toRadians(m.heading || 0) - camera.heading);
+    if (b.rotation !== rotation) b.rotation = rotation;
+  }
+
+  const pointsById = new Map(); // id -> PointPrimitive, for per-frame size and horizon checks
+  const billboards = new Map(); // id -> Billboard, kept between updates so moving craft never flicker
+  let labelsById = new Map();
+  let movingCount = 0;
+
+  // ---- Proximity sound ---------------------------------------------------------------------------
+  // When the camera is really close to a plane or satellite, a synthesized sound fades in: a jet rumble
+  // (filtered noise plus a low engine tone) for aircraft, a thin electrical hum for satellites. Louder and
+  // brighter the closer you are; silent beyond NEAR_SOUND_M. Generated in Web Audio, so no files ship.
+  // Browsers only allow audio after a touch, so it starts on the first tap or drag of the globe.
+  const NEAR_SOUND_M = 20000;
+  let audio = null;
+  let soundEnabled = true;
+  function ensureAudio() {
+    if (audio) return audio;
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return null;
+    const ctx = new Ctx();
+    const len = ctx.sampleRate * 2;
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < len; i++) { // brown noise: a deep, airy roar
+      last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02;
+      data[i] = last * 3.5;
+    }
+    // The buffer loops every 2 s. Brown noise drifts, so its last sample rarely equals its first, and that
+    // step sounded as a crack on every loop. Remove the drift so the end meets the start, then soft-limit
+    // the peaks (tanh keeps the endpoints equal and stays within [-1, 1], so nothing clips).
+    const drift = (data[len - 1] - data[0]) / (len - 1);
+    for (let i = 0; i < len; i++) data[i] = Math.tanh(data[i] - drift * i);
+    const noise = ctx.createBufferSource();
+    noise.buffer = buf;
+    noise.loop = true;
+    const noiseGain = ctx.createGain();
+    const tone = ctx.createOscillator();
+    const toneGain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 300;
+    const master = ctx.createGain();
+    master.gain.value = 0;
+    noise.connect(noiseGain); noiseGain.connect(filter);
+    tone.connect(toneGain); toneGain.connect(filter);
+    filter.connect(master); master.connect(ctx.destination);
+    noise.start(); tone.start();
+    audio = { ctx, noiseGain, tone, toneGain, filter, master };
+    return audio;
+  }
+  function wakeAudio() {
+    if (!soundEnabled) return;
+    const a = ensureAudio();
+    if (a && a.ctx.state === 'suspended') a.ctx.resume();
+  }
+  document.addEventListener('touchstart', wakeAudio, { passive: true });
+  document.addEventListener('pointerdown', wakeAudio, { passive: true });
+  document.addEventListener('visibilitychange', () => {
+    if (!audio) return;
+    if (document.hidden) audio.ctx.suspend(); else if (soundEnabled) audio.ctx.resume();
+  });
+  window.setSound = (on) => {
+    soundEnabled = !!on;
+    if (audio) { if (soundEnabled) audio.ctx.resume(); else audio.ctx.suspend(); }
+  };
+  function updateSound(nearest, distance) {
+    if (!audio || audio.ctx.state !== 'running') return;
+    const t = audio.ctx.currentTime;
+    const closeness = nearest && distance < NEAR_SOUND_M ? 1 - distance / NEAR_SOUND_M : 0;
+    const level = closeness * closeness; // falls off quickly, swells as you close in
+    if (nearest && nearest.isSatellite) {
+      audio.tone.type = 'sine';
+      audio.tone.frequency.setTargetAtTime(180 + 120 * level, t, 0.3);
+      audio.toneGain.gain.setTargetAtTime(0.5, t, 0.3);
+      audio.noiseGain.gain.setTargetAtTime(0.15, t, 0.3);
+      audio.filter.frequency.setTargetAtTime(900 + 1500 * level, t, 0.3);
+    } else {
+      audio.tone.type = 'sawtooth';
+      audio.tone.frequency.setTargetAtTime(70 + 40 * level, t, 0.3);
+      audio.toneGain.gain.setTargetAtTime(0.08, t, 0.3);
+      audio.noiseGain.gain.setTargetAtTime(1.0, t, 0.3);
+      audio.filter.frequency.setTargetAtTime(250 + 1100 * level, t, 0.3);
+    }
+    audio.master.gain.setTargetAtTime(level * 0.35, t, 0.25);
+  }
+
+  // ---- Weather -------------------------------------------------------------------------------------
+  // Weather from the app's own data: Kotlin sends one cell per official weather alert that brings rain
+  // (setWeather; see WeatherEffects.kt), with thunder for thunderstorm/tornado alerts and an intensity from
+  // the alert severity. Near a cell, flying low shows clouds and rain that fade out with distance from
+  // the alert centre over CELL_RADIUS_M; thunder and lightning only near thunderstorm cells. Away from
+  // every alert the sky is clear. Everything fades in as the camera descends from STORM_TOP_M to
+  // STORM_FULL_M. The rain and thunder sounds are synthesized and share the proximity sound's switch.
+  let reduceMotion = false;
+  window.setReduceMotion = (on) => { reduceMotion = !!on; updateStorm(); };
+  const STORM_TOP_M = 15000;
+  const STORM_FULL_M = 4000;
+  const CLOUD_FIELD_M = 60000; // clouds are scattered within this radius of the view centre
+  const MAX_CLOUDS = 90;
+  const CELL_RADIUS_M = 120000;
+  const altitudeFactor = () => {
+    if (isFlat()) return 0;
+    const h = camera.positionCartographic.height;
+    return Cesium.Math.clamp((STORM_TOP_M - h) / (STORM_TOP_M - STORM_FULL_M), 0, 1);
+  };
+
+  let weatherCells = [];
+  window.setWeather = (cells) => {
+    weatherCells = (cells || []).map((c) => ({
+      pos: Cesium.Cartesian3.fromDegrees(c.lng, c.lat, 0),
+      thunder: !!c.thunder,
+      intensity: Cesium.Math.clamp(Number(c.intensity) || 0, 0, 1),
+    }));
+    weatherKey = '';
+    updateStorm();
+  };
+  const weather = { cloud: 0, rain: 0, thunder: false, dark: 0 };
+  let weatherKey = '';
+  // Strongest alert influence at the view centre: full at the alert centre, none beyond CELL_RADIUS_M.
+  function weatherAt(centre) {
+    let rain = 0;
+    let thunder = false;
+    for (const c of weatherCells) {
+      const d = Cesium.Cartesian3.distance(c.pos, centre);
+      if (d >= CELL_RADIUS_M) continue;
+      const k = c.intensity * (1 - d / CELL_RADIUS_M);
+      if (k > rain) rain = k;
+      if (c.thunder && k > 0.15) thunder = true;
+    }
+    weather.rain = rain;
+    weather.thunder = thunder;
+    weather.cloud = rain > 0 ? Math.min(1, 0.35 + rain) : 0;
+    weather.dark = thunder ? 1 : rain;
+    const key = Math.round(weather.cloud * 10) + ':' + Math.round(weather.dark * 4);
+    if (key !== weatherKey) { weatherKey = key; cloudCentre = null; } // re-scatter for new conditions
+  }
+
+  // Clouds: cumulus around the view centre, as many as the cloud cover says, rebuilt when the view travels.
+  const clouds = scene.primitives.add(new Cesium.CloudCollection({ noiseDetail: 16.0 }));
+  let cloudCentre = null;
+  function updateClouds(strength, centre) {
+    const count = Math.round(MAX_CLOUDS * weather.cloud);
+    clouds.show = strength > 0 && count > 0;
+    if (!clouds.show) return;
+    const carto = Cesium.Cartographic.fromCartesian(centre);
+    if (!carto) return;
+    if (cloudCentre && Cesium.Cartesian3.distance(cloudCentre, centre) < CLOUD_FIELD_M * 0.5) return;
+    cloudCentre = Cesium.Cartesian3.clone(centre);
+    clouds.removeAll();
+    const metresPerDeg = 111320;
+    for (let i = 0; i < count; i++) {
+      const r = Math.sqrt(Math.random()) * CLOUD_FIELD_M;
+      const a = Math.random() * Math.PI * 2;
+      const lat = Cesium.Math.toDegrees(carto.latitude) + (r * Math.cos(a)) / metresPerDeg;
+      const lng = Cesium.Math.toDegrees(carto.longitude) +
+        (r * Math.sin(a)) / (metresPerDeg * Math.max(Math.cos(carto.latitude), 0.1));
+      const w = 2500 + Math.random() * 4500;
+      const h = w * (0.35 + Math.random() * 0.25);
+      clouds.add({
+        position: Cesium.Cartesian3.fromDegrees(lng, lat, 2500 + Math.random() * 3500),
+        scale: new Cesium.Cartesian2(w, h),
+        maximumSize: new Cesium.Cartesian3(30 + Math.random() * 20, 18 + Math.random() * 12, 20 + Math.random() * 10),
+        slice: 0.3 + Math.random() * 0.3,
+        brightness: 1.0 - 0.45 * weather.dark + Math.random() * 0.15, // white when fair, grey in rain
+        color: Cesium.Color.fromCssColorString('#c9d0da'),
+      });
+    }
+  }
+
+  // Rain: slanted streaks on a 2D canvas, denser and faster the deeper into the storm.
+  const rainCanvas = document.getElementById('rain');
+  const rainCtx = rainCanvas.getContext('2d');
+  const drops = [];
+  let rainLevel = 0;
+  let rainRunning = false;
+  function sizeRain() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    rainCanvas.width = Math.round(window.innerWidth * dpr);
+    rainCanvas.height = Math.round(window.innerHeight * dpr);
+    rainCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', sizeRain);
+  sizeRain();
+  function newDrop(anywhere) {
+    const w = window.innerWidth, h = window.innerHeight;
+    return {
+      x: Math.random() * (w + 200) - 100,
+      y: anywhere ? Math.random() * h : -20 - Math.random() * 60,
+      len: 14 + Math.random() * 22,
+      speed: 900 + Math.random() * 700, // px per second
+      alpha: 0.18 + Math.random() * 0.3,
+    };
+  }
+  let rainLast = 0;
+  function rainFrame(nowMs) {
+    if (rainLevel <= 0 || document.hidden) {
+      rainRunning = false;
+      rainCanvas.style.display = 'none';
+      return;
+    }
+    const dt = Math.min((nowMs - (rainLast || nowMs)) / 1000, 0.05);
+    rainLast = nowMs;
+    const want = Math.round(700 * rainLevel); // heavy rain at full strength
+    while (drops.length < want) drops.push(newDrop(true));
+    if (drops.length > want) drops.length = want;
+    const w = window.innerWidth, h = window.innerHeight;
+    rainCtx.clearRect(0, 0, w, h);
+    rainCtx.lineWidth = 1.2;
+    rainCtx.lineCap = 'round';
+    const slant = 0.22; // wind
+    for (let i = 0; i < drops.length; i++) {
+      const d = drops[i];
+      d.y += d.speed * dt;
+      d.x += d.speed * slant * dt;
+      if (d.y - d.len > h || d.x > w + 100) { drops[i] = newDrop(false); continue; }
+      rainCtx.strokeStyle = 'rgba(205, 220, 240, ' + (d.alpha * (0.5 + 0.5 * rainLevel)).toFixed(3) + ')';
+      rainCtx.beginPath();
+      rainCtx.moveTo(d.x, d.y);
+      rainCtx.lineTo(d.x - d.len * slant, d.y - d.len);
+      rainCtx.stroke();
+    }
+    requestAnimationFrame(rainFrame);
+  }
+
+  // Storm sound: rain (soft filtered noise with light droplet ticks and a slow swell) plus thunder every few
+  // seconds, each with a lightning flash just before it. Near strikes start with a bright crack; every strike
+  // then rolls as a rumble. Phone speakers barely play below ~200 Hz, so the rumble's body sits at 150-1200 Hz
+  // instead of true sub-bass, and everything passes through a limiter so loud strikes never clip into crackle.
+  let storm = null;
+  function noiseBuffer(ctx, seconds, kind) {
+    const len = Math.round(ctx.sampleRate * seconds);
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    let b0 = 0, b1 = 0, b2 = 0, brown = 0;
+    for (let i = 0; i < len; i++) {
+      const w = Math.random() * 2 - 1;
+      if (kind === 'brown') { // deep and smooth, for the rumble
+        brown = (brown + 0.02 * w) / 1.02;
+        data[i] = brown * 3.5;
+      } else if (kind === 'pink') { // softer than white noise: reads as rain, not static
+        b0 = 0.99765 * b0 + w * 0.0990460;
+        b1 = 0.96300 * b1 + w * 0.2965164;
+        b2 = 0.57000 * b2 + w * 1.0526913;
+        data[i] = (b0 + b1 + b2 + w * 0.1848) * 0.2;
+      } else {
+        data[i] = w;
+      }
+    }
+    // Fade the loop seam so a looping buffer never clicks.
+    const fade = Math.min(len >> 3, Math.round(ctx.sampleRate * 0.05));
+    for (let i = 0; i < fade; i++) {
+      const k = i / fade;
+      data[i] = data[i] * k + data[len - fade + i] * (1 - k);
+    }
+    return buf;
+  }
+  function ensureStorm() {
+    if (storm) return storm;
+    const a = ensureAudio();
+    if (!a) return null;
+    const ctx = a.ctx;
+    // Limiter on the storm bus: thunder over rain stays clean instead of clipping.
+    const out = ctx.createDynamicsCompressor();
+    out.threshold.value = -10; out.knee.value = 6; out.ratio.value = 12;
+    out.attack.value = 0.003; out.release.value = 0.25;
+    out.connect(ctx.destination);
+    const rain = ctx.createBufferSource();
+    rain.buffer = noiseBuffer(ctx, 4, 'pink');
+    rain.loop = true;
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 400;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 7000;
+    const rainGain = ctx.createGain(); rainGain.gain.value = 0;
+    const swell = ctx.createOscillator(); swell.frequency.value = 0.15; // gusts
+    const swellDepth = ctx.createGain(); swellDepth.gain.value = 0;
+    swell.connect(swellDepth); swellDepth.connect(rainGain.gain);
+    rain.connect(hp); hp.connect(lp); lp.connect(rainGain); rainGain.connect(out);
+    // Droplets: short bright ticks on their own track, so the rain patters without adding hiss.
+    const drops = ctx.createBufferSource();
+    const dbuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+    const dd = dbuf.getChannelData(0);
+    for (let i = 0; i < dd.length; i++) {
+      if (Math.random() < 0.0006) {
+        const amp = 0.3 + Math.random() * 0.5;
+        const n = 40 + Math.floor(Math.random() * 80);
+        for (let j = 0; j < n && i + j < dd.length; j++) dd[i + j] += (Math.random() * 2 - 1) * amp * Math.exp(-j / 18);
+      }
+    }
+    drops.buffer = dbuf; drops.loop = true;
+    const dropBand = ctx.createBiquadFilter(); dropBand.type = 'bandpass'; dropBand.frequency.value = 3000; dropBand.Q.value = 0.8;
+    const dropGain = ctx.createGain(); dropGain.gain.value = 0;
+    drops.connect(dropBand); dropBand.connect(dropGain); dropGain.connect(out);
+    rain.start(); drops.start(); swell.start();
+    storm = {
+      ctx, out, rainGain, dropGain, swellDepth, nextThunder: 0,
+      brown: noiseBuffer(ctx, 6, 'brown'),
+      white: noiseBuffer(ctx, 1, 'white'),
+    };
+    return storm;
+  }
+  function thunder(level) {
+    const st = storm;
+    const ctx = st.ctx;
+    const t = ctx.currentTime + 0.05;
+    const near = Math.random() < 0.35 + 0.4 * level; // close strike: crack first, sooner after the flash
+    const delay = near ? 0.15 + Math.random() * 0.4 : 1.2 + Math.random() * 2.5;
+    flashLightning(near);
+    const start = t + delay;
+    if (near) {
+      // The crack: a sharp, bright snap of white noise that dies in a fraction of a second.
+      const crack = ctx.createBufferSource();
+      crack.buffer = st.white;
+      const band = ctx.createBiquadFilter(); band.type = 'bandpass'; band.frequency.value = 2200; band.Q.value = 0.6;
+      const cg = ctx.createGain();
+      const cp = 0.9 * (0.6 + 0.4 * level);
+      cg.gain.setValueAtTime(0.0001, start);
+      cg.gain.exponentialRampToValueAtTime(cp, start + 0.008);
+      cg.gain.exponentialRampToValueAtTime(cp * 0.25, start + 0.12);
+      cg.gain.exponentialRampToValueAtTime(0.0001, start + 0.6);
+      crack.connect(band); band.connect(cg); cg.connect(st.out);
+      crack.start(start);
+      crack.stop(start + 0.7);
+    }
+    // The rumble: smooth brown noise whose brightness falls as it rolls away, with a few swells.
+    const rumble = ctx.createBufferSource();
+    rumble.buffer = st.brown;
+    rumble.loop = true;
+    rumble.playbackRate.value = 0.8 + Math.random() * 0.3;
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 60;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 0.7;
+    const dur = 4 + Math.random() * 3;
+    lp.frequency.setValueAtTime(near ? 1600 : 900, start);
+    lp.frequency.exponentialRampToValueAtTime(near ? 500 : 350, start + 1.0);
+    lp.frequency.exponentialRampToValueAtTime(220, start + dur);
+    const g = ctx.createGain();
+    const peak = (near ? 0.85 : 0.6) * (0.55 + 0.45 * level);
+    const rumbleStart = start + (near ? 0.05 : 0);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.setValueAtTime(0.0001, rumbleStart);
+    g.gain.exponentialRampToValueAtTime(peak, rumbleStart + (near ? 0.08 : 0.5));
+    // Rolling: two or three later swells, as the sound returns from farther parts of the bolt.
+    let at = rumbleStart + 0.9;
+    let p = peak * 0.55;
+    for (let i = 0; i < 2 + Math.floor(Math.random() * 2) && at < rumbleStart + dur - 1.2; i++) {
+      g.gain.exponentialRampToValueAtTime(p * 0.6, at);
+      g.gain.exponentialRampToValueAtTime(p, at + 0.35);
+      at += 0.8 + Math.random() * 0.9;
+      p *= 0.75;
+    }
+    g.gain.exponentialRampToValueAtTime(0.0001, rumbleStart + dur);
+    rumble.connect(hp); hp.connect(lp); lp.connect(g); g.connect(st.out);
+    rumble.start(t);
+    rumble.stop(rumbleStart + dur + 0.1);
+  }
+  const flashEl = document.getElementById('flash');
+  function flashLightning(near) {
+    if (reduceMotion) return; // no flashing for motion-sensitive viewers; the thunder still plays
+    const peak = near ? 0.55 : 0.25;
+    const steps = near ? [peak, 0, peak * 0.8, 0.1, peak * 0.4, 0] : [peak, 0.05, peak * 0.6, 0];
+    steps.forEach((o, i) => setTimeout(() => { flashEl.style.opacity = String(o); }, i * 70));
+  }
+  function updateStorm() {
+    const altitude = altitudeFactor();
+    const centre = altitude > 0 ? (centerPoint() || null) : null;
+    if (centre) weatherAt(centre);
+    updateClouds(altitude, centre || camera.positionWC);
+    const rain = altitude * weather.rain;
+    const level = soundEnabled ? rain : 0;
+    rainLevel = reduceMotion ? 0 : rain; // falling streaks are motion; rain is still heard
+    if (rainLevel > 0 && !rainRunning) {
+      rainRunning = true;
+      rainLast = 0;
+      rainCanvas.style.display = 'block';
+      requestAnimationFrame(rainFrame);
+    }
+    if (!audio || audio.ctx.state !== 'running') return;
+    const st = ensureStorm();
+    if (!st) return;
+    const t = st.ctx.currentTime;
+    st.rainGain.gain.setTargetAtTime(level * 0.45, t, 0.6);
+    st.dropGain.gain.setTargetAtTime(level * 0.5, t, 0.6);
+    st.swellDepth.gain.setTargetAtTime(level * 0.12, t, 0.6);
+    const storming = soundEnabled && weather.thunder && altitude > 0.2;
+    if (storming && t >= st.nextThunder) {
+      if (st.nextThunder > 0) thunder(Math.max(level, 0.5));
+      st.nextThunder = t + (14 - 8 * weather.rain) + Math.random() * 8; // heavier storms rumble more often
+    }
+  }
+  // Keep the storm alive while the camera sits still (no renders happen then).
+  setInterval(() => { if (!document.hidden) updateStorm(); }, 500);
+
+  // Runs before every rendered frame: advance moving markers and resize everything for the current eye.
+  const followPrev = new Cesium.Cartesian3();
+  const followDelta = new Cesium.Cartesian3();
+  const lastCamPos = new Cesium.Cartesian3();
+  const lastCamDir = new Cesium.Cartesian3();
+  function updateFrame() {
+    const t = clock();
+    const flat = isFlat();
+    let nearest = null;
+    let nearestDistance = Infinity;
+    const contourView = updateContourView();
+    // Anything over the horizon is hidden outright: from a low camera the globe's depth alone can let
+    // far-side markers show through, which looked like dots scattered on the ground nearby.
+    const occluder = flat ? null : new Cesium.EllipsoidalOccluder(Cesium.Ellipsoid.WGS84, camera.positionWC);
+    // Every property written here makes Cesium re-upload that marker to the GPU, which with ~1,500 markers
+    // stalled every frame. So: static markers are only revisited when the camera moved, sizes change in
+    // 5% steps, and nothing is written unless its value actually changed.
+    const camMoved = !Cesium.Cartesian3.equalsEpsilon(camera.positionWC, lastCamPos, 0, 0.5) ||
+      !Cesium.Cartesian3.equalsEpsilon(camera.directionWC, lastCamDir, 1e-7);
+    if (camMoved) {
+      Cesium.Cartesian3.clone(camera.positionWC, lastCamPos);
+      Cesium.Cartesian3.clone(camera.directionWC, lastCamDir);
+    }
+    for (const m of markers) {
+      const tr = tracks.get(m.id);
+      const moving = tr && (tr.rate || tr.offLat || tr.offLng);
+      const placed = moving || !m._pos; // new fix (drawMarkers clears _pos) or gliding
+      if (!placed && !camMoved) continue;
+      if (placed) {
+        const ll = moving ? trackLatLng(tr, t) : { lat: m.lat, lng: m.lng };
+        const follow = moving && m.id === selectedId && m._pos && !flat;
+        if (follow) Cesium.Cartesian3.clone(m._pos, followPrev);
+        m._pos = Cesium.Cartesian3.fromDegrees(ll.lng, ll.lat, markerHeight(m), undefined, m._pos);
+        // Track the selected craft: slide the camera by exactly how far it moved, so it holds its place
+        // on screen while zoom, tilt and rotation stay yours.
+        if (follow) {
+          Cesium.Cartesian3.subtract(m._pos, followPrev, followDelta);
+          if (Cesium.Cartesian3.magnitude(followDelta) < 20000) { // not a reset jump
+            Cesium.Cartesian3.add(camera.position, followDelta, camera.position);
+          }
+        }
+      }
+      const b = billboards.get(m.id);
+      const l = labelsById.get(m.id);
+      const pt = b ? null : pointsById.get(m.id);
+      const visible = (!contourView || m.id === selectedId) && (!occluder || occluder.isPointVisible(m._pos));
+      if (l && l.show !== visible) l.show = visible;
+      if (pt) {
+        if (pt.show !== visible) pt.show = visible;
+        if (visible) {
+          const px = Math.max(3, Math.round(pt._basePx * perspectiveScale(m, m._pos)));
+          if (pt.pixelSize !== px) pt.pixelSize = px;
+        }
+      }
+      if (b) {
+        if (b.show !== visible) b.show = visible;
+        if (placed) b.position = m._pos;
+        if (visible) {
+          const scale = Math.round(perspectiveScale(m, m._pos) * 20) / 20;
+          if (b.scale !== scale) b.scale = scale;
+          if (m.isFlight) orientFlight(b, m);
+          // Keep the name just clear of the icon as it grows or shrinks.
+          if (l) {
+            const off = Math.round((b.width * scale) / 2) + 4;
+            if (l._wmOff !== off) { l._wmOff = off; l.pixelOffset = new Cesium.Cartesian2(off, 0); }
+          }
+        }
+      }
+      if (placed && l) l.position = m._pos;
+      if (placed && pt) pt.position = m._pos;
+      if (!flat && moving && isCraft(m)) {
+        const d = Cesium.Cartesian3.distance(camera.positionWC, m._pos);
+        if (d < nearestDistance) { nearestDistance = d; nearest = m; }
+      }
+    }
+    updateSound(nearest, nearestDistance);
+    updateStorm();
+  }
+  scene.preUpdate.addEventListener(updateFrame);
+
+  // Keeps frames coming while something moves: smooth when close, a few frames a second when the whole
+  // globe is in view (craft move less than a pixel per frame there), and nothing when the page is hidden.
+  let lastFrame = 0;
+  function tick(nowMs) {
+    if (movingCount > 0 && !document.hidden) {
+      // 30 fps when zoomed in close, where a plane crosses pixels quickly and must glide smoothly; 15 fps at
+      // regional zoom; 1 fps for the whole-globe view where craft move under a pixel per frame. Each redraw
+      // competes with the app UI for the phone's GPU, so it is no faster than the view needs.
+      const h = camera.positionCartographic.height;
+      const interval = h > 2.0e6 ? 1000 : h > 300000 ? 66 : 33;
+      if (nowMs - lastFrame >= interval) {
+        lastFrame = nowMs;
+        scene.requestRender();
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  // Static dots and the label plan are rebuilt only when what they show changes, not on every position tick.
+  let pointsSignature = '';
+  let planSignature = '';
+  let lastPlanAt = 0;
+  const PLAN_REFRESH_MS = 3000; // moving labels follow their craft every frame; re-plan occasionally for overlaps
+  function drawMarkers(force) {
+    const flat = isFlat();
+    let pointIds = '';
+    for (const m of markers) if (!m.icon) pointIds += m.id + (m.id === selectedId ? '*' : '') + (m.color || '') + '|';
+    const pointsSig = (flat ? 'F' : '3') + pointIds;
+    const rebuildPoints = force === true || pointsSig !== pointsSignature;
+    pointsSignature = pointsSig;
+    if (rebuildPoints) { points.removeAll(); pointsById.clear(); }
+    const t = clock();
+    const seen = new Set();
+    movingCount = 0;
+    for (const m of markers) {
+      const selected = m.id === selectedId;
+      updateTrack(m, t);
+      if (m.rate) movingCount++;
+      m._pos = null;
+      if (m.icon) {
+        // Per-event icon drawn by Kotlin (planes, satellites, one per layer); flights rotate to their heading.
+        seen.add(m.id);
+        const size = selected ? SELECTED_PX : BASE_PX;
+        let b = billboards.get(m.id);
+        if (!b) {
+          b = icons.add({ id: m.id, position: markerPosition(m), image: m.icon });
+          b._wmImage = m.icon;
+          billboards.set(m.id, b);
+        } else if (b._wmImage !== m.icon) {
+          b.image = m.icon;
+          b._wmImage = m.icon;
+        }
+        b.width = size;
+        b.height = size;
+        b.translucencyByDistance = isCraft(m) && !selected && !flat ? CRAFT_FADE : undefined;
+        b.disableDepthTestDistance = depthTestOff(m, flat);
+        b.alignedAxis = Cesium.Cartesian3.ZERO; // screen-space rotation (see orientFlight)
+        if (!m.isFlight) b.rotation = 0;
+        continue;
+      }
+      if (!rebuildPoints) continue;
+      const p = points.add({
+        id: m.id,
+        position: markerPosition(m),
+        color: Cesium.Color.fromCssColorString(m.color || '#ffb020'),
+        pixelSize: selected ? 16 : 10,
+        outlineColor: selected ? Cesium.Color.WHITE : Cesium.Color.BLACK.withAlpha(0.6),
+        outlineWidth: selected ? 3 : 1,
+        disableDepthTestDistance: depthTestOff(m, flat),
+      });
+      p._basePx = selected ? 16 : 10;
+      pointsById.set(m.id, p);
+    }
+    for (const [id, b] of billboards) {
+      if (!seen.has(id)) { icons.remove(b); billboards.delete(id); }
+    }
+    for (const id of tracks.keys()) {
+      if (!markersById.has(id)) tracks.delete(id);
+    }
+    updateFrame(); // positions current before projecting for labels
+    scene.requestRender();
+    reportGround();
+    const planSig = markers.length + ':' + selectedId + ':' + (flat ? 'F' : '3');
+    const now = Date.now();
+    if (force === true || planSig !== planSignature || now - lastPlanAt > PLAN_REFRESH_MS) {
+      planSignature = planSig;
+      lastPlanAt = now;
+      requestPlan();
+    }
+  }
+
+  // Asks Kotlin which labels and cluster badges to draw. Kotlin answers with setPlan().
+  function requestPlan() {
+    const width = scene.canvas.clientWidth;
+    const height = scene.canvas.clientHeight;
+    const projected = [];
+    for (const m of markers) {
+      const pos = markerPosition(m);
+      if (!facesCamera(pos)) continue;
+      const c = scene.cartesianToCanvasCoordinates(pos);
+      if (c) projected.push({ id: m.id, x: c.x, y: c.y });
+    }
+    bridge.onProjected(JSON.stringify(projected), width, height, camera.positionCartographic.height);
+  }
+
+  // Kotlin -> JS: labels for single markers and count badges for clusters.
+  window.setPlan = (plan) => {
+    labels.removeAll();
+    labelsById = new Map();
+    clusterCentres = {};
+    const flat = isFlat();
+    const depth = flat ? Number.POSITIVE_INFINITY : 0;
+    for (const l of (plan && plan.labels) || []) {
+      const m = markersById.get(l.id);
+      if (!m) continue;
+      const label = labels.add({
+        id: m.id,
+        text: l.text,
+        position: markerPosition(m),
+        font: '600 12px sans-serif',
+        fillColor: Cesium.Color.WHITE,
+        outlineColor: Cesium.Color.BLACK,
+        outlineWidth: 3,
+        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+        horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
+        verticalOrigin: Cesium.VerticalOrigin.CENTER,
+        pixelOffset: new Cesium.Cartesian2(10, 0),
+        disableDepthTestDistance: depthTestOff(m, flat),
+      });
+      labelsById.set(m.id, label);
+    }
+    // Count badges from the plan are not drawn: the far view shows density contours instead (see below).
+    scene.requestRender();
+  }
+
+  // Kotlin -> JS: the anchored card for the selected marker, or null.
+  function positionCallout() {
+    if (!calloutData) return;
+    const el = document.getElementById('callout');
+    const m = markersById.get(calloutData.id);
+    const pos = m ? markerPosition(m) : null;
+    const c = pos && facesCamera(pos) ? scene.cartesianToCanvasCoordinates(pos) : null;
+    if (!c) { el.style.display = 'none'; return; }
+    const w = el.offsetWidth;
+    const h = el.offsetHeight;
+    // Above the marker by default; below it when that would sit under the Android top bar.
+    const TOP_SAFE_PX = 160;
+    let top = c.y - 18 - h;
+    if (top < TOP_SAFE_PX) top = c.y + 18;
+    const left = Math.min(Math.max(c.x - w / 2, 8), window.innerWidth - w - 8);
+    el.style.left = left + 'px';
+    el.style.top = top + 'px';
+    el.style.display = 'block';
+  }
+  window.setCallout = (data) => {
+    calloutData = data || null;
+    const el = document.getElementById('callout');
+    if (!calloutData) { el.style.display = 'none'; scene.requestRender(); return; }
+    const layer = document.getElementById('co-layer');
+    layer.textContent = calloutData.layer || '';
+    layer.style.color = calloutData.color || '#1b7f5b';
+    document.getElementById('co-title').textContent = calloutData.title || '';
+    document.getElementById('co-meta').textContent = [calloutData.time, calloutData.source].filter(Boolean).join('  ·  ');
+    document.getElementById('co-fact').textContent = calloutData.fact || '';
+    const save = document.getElementById('co-save');
+    save.textContent = calloutData.saved ? 'Saved' : 'Save';
+    positionCallout();
+    scene.requestRender();
+  };
+  document.getElementById('co-details').onclick = () => { if (calloutData) bridge.onCalloutDetails(calloutData.id); };
+  document.getElementById('co-save').onclick = () => { if (calloutData) bridge.onCalloutSave(calloutData.id); };
+  document.getElementById('co-close').onclick = () => { bridge.onMapTap(); };
+  scene.postRender.addEventListener(positionCallout);
+
+  // Far view (camera above CONTOUR_ABOVE_M): thousands of dots blur into noise, so markers are replaced by
+  // density contours, like a topographic map. Every marker adds a Gaussian bump to a 1-degree world grid;
+  // the summed density is cut into bands at doubling thresholds, each band filled a little more strongly
+  // and outlined, and tinted by the weighted mix of its markers' colours. The grid is painted onto one
+  // translucent globe-wide rectangle. Only the selected marker stays visible on top.
+  const CONTOUR_ABOVE_M = 5000000;
+  const CONTOUR_SIGMA_DEG = 2.2;              // bump width: ~250 km
+  const GRID_W = 360, GRID_H = 180;           // 1-degree cells, row 0 = 90N
+  const TEX_W = 800, TEX_H = 400;             // painted texture, bilinear from the grid for smooth edges
+  const BAND_BASE = 0.35;                     // density of the first band (one isolated marker's peak = 1)
+  const BAND_COUNT = 7;
+  const CONTOUR_REFRESH_MS = 5000;
+  const contourCanvases = [document.createElement('canvas'), document.createElement('canvas')];
+  for (const c of contourCanvases) { c.width = TEX_W; c.height = TEX_H; }
+  let contourFlip = 0;
+  let contourGrid = null;  // Float32Array density, GRID_W * GRID_H
+  let contourDirty = true;
+  let contourBuiltAt = 0;
+  const contourMaterial = Cesium.Material.fromType('Image', { image: contourCanvases[0], color: new Cesium.Color(1, 1, 1, 0.999) });
+  const contourPrimitive = scene.primitives.add(new Cesium.Primitive({
+    geometryInstances: new Cesium.GeometryInstance({
+      geometry: new Cesium.RectangleGeometry({
+        rectangle: Cesium.Rectangle.fromDegrees(-180, -90, 180, 90),
+        height: 30000, // above the highest terrain, invisible offset from this far out
+        granularity: Cesium.Math.toRadians(2),
+        vertexFormat: Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT,
+      }),
+    }),
+    appearance: new Cesium.EllipsoidSurfaceAppearance({ material: contourMaterial, aboveGround: true, translucent: true }),
+    asynchronous: false,
+    show: false,
+  }));
+
+  function buildContourGrid() {
+    const dens = new Float32Array(GRID_W * GRID_H);
+    const rs = new Float32Array(GRID_W * GRID_H), gs = new Float32Array(GRID_W * GRID_H), bs = new Float32Array(GRID_W * GRID_H);
+    const reach = Math.ceil(CONTOUR_SIGMA_DEG * 3);
+    const inv2s2 = 1 / (2 * CONTOUR_SIGMA_DEG * CONTOUR_SIGMA_DEG);
+    const tmp = new Cesium.Color();
+    for (const m of markers) {
+      if (!Number.isFinite(m.lat) || !Number.isFinite(m.lng)) continue;
+      const col = Cesium.Color.fromCssColorString(m.color || '#2fb8c8', tmp) || tmp;
+      const cy = (90 - m.lat), cx = (m.lng + 180);
+      for (let dy = -reach; dy <= reach; dy++) {
+        const row = Math.floor(cy) + dy;
+        if (row < 0 || row >= GRID_H) continue;
+        const lat = 90 - (row + 0.5);
+        const k = Math.max(Math.cos(Cesium.Math.toRadians(lat)), 0.05); // degrees of longitude shrink toward the poles
+        const reachX = Math.min(Math.ceil(reach / k), GRID_W / 2);
+        const ddy = (row + 0.5) - cy;
+        for (let dx = -reachX; dx <= reachX; dx++) {
+          const colIdx = ((Math.floor(cx) + dx) % GRID_W + GRID_W) % GRID_W;
+          const ddx = ((Math.floor(cx) + dx) + 0.5 - cx) * k;
+          const w = Math.exp(-(ddx * ddx + ddy * ddy) * inv2s2);
+          if (w < 0.01) continue;
+          const i = row * GRID_W + colIdx;
+          dens[i] += w; rs[i] += w * col.red; gs[i] += w * col.green; bs[i] += w * col.blue;
+        }
+      }
+    }
+    return { dens, rs, gs, bs };
+  }
+
+  const bandOf = (d) => d < BAND_BASE ? -1 : Math.min(BAND_COUNT - 1, Math.floor(Math.log2(d / BAND_BASE)));
+
+  function sampleGrid(arr, gx, gy) {
+    const x0 = Math.floor(gx), y0 = Math.max(0, Math.min(GRID_H - 1, Math.floor(gy)));
+    const y1 = Math.min(GRID_H - 1, y0 + 1), fx = gx - x0, fy = Math.max(0, Math.min(1, gy - y0));
+    const xa = ((x0 % GRID_W) + GRID_W) % GRID_W, xb = (xa + 1) % GRID_W;
+    const a = arr[y0 * GRID_W + xa], b = arr[y0 * GRID_W + xb], c = arr[y1 * GRID_W + xa], d = arr[y1 * GRID_W + xb];
+    return (a * (1 - fx) + b * fx) * (1 - fy) + (c * (1 - fx) + d * fx) * fy;
+  }
+
+  function paintContours() {
+    const g = buildContourGrid();
+    contourGrid = g.dens;
+    const canvas = contourCanvases[contourFlip = 1 - contourFlip]; // a new image object makes Cesium re-upload
+    const ctx = canvas.getContext('2d');
+    const img = ctx.createImageData(TEX_W, TEX_H);
+    const px = img.data;
+    const bands = new Int8Array(TEX_W * TEX_H);
+    const sx = GRID_W / TEX_W, sy = GRID_H / TEX_H;
+    for (let y = 0; y < TEX_H; y++) {
+      const gy = (y + 0.5) * sy - 0.5;
+      for (let x = 0; x < TEX_W; x++) bands[y * TEX_W + x] = bandOf(sampleGrid(g.dens, (x + 0.5) * sx - 0.5, gy));
+    }
+    for (let y = 0; y < TEX_H; y++) {
+      const gy = (y + 0.5) * sy - 0.5;
+      for (let x = 0; x < TEX_W; x++) {
+        const i = y * TEX_W + x;
+        const band = bands[i];
+        const right = bands[y * TEX_W + ((x + 1) % TEX_W)];
+        const down = y + 1 < TEX_H ? bands[i + TEX_W] : band;
+        const edge = right !== band || down !== band;
+        const top = Math.max(band, right, down);
+        if (top < 0) continue;
+        const gx = (x + 0.5) * sx - 0.5;
+        const d = Math.max(sampleGrid(g.dens, gx, gy), 1e-6);
+        const r = sampleGrid(g.rs, gx, gy) / d, gr = sampleGrid(g.gs, gx, gy) / d, b = sampleGrid(g.bs, gx, gy) / d;
+        // Denser bands get brighter fills; the outline of every band is a near-opaque, lighter line.
+        const lift = edge ? 0.35 : band / (BAND_COUNT * 3);
+        const o = i * 4;
+        px[o] = Math.round(255 * Math.min(1, r + (1 - r) * lift));
+        px[o + 1] = Math.round(255 * Math.min(1, gr + (1 - gr) * lift));
+        px[o + 2] = Math.round(255 * Math.min(1, b + (1 - b) * lift));
+        px[o + 3] = edge ? 235 : Math.round(255 * (0.12 + 0.07 * band));
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    contourMaterial.uniforms.image = canvas;
+    contourDirty = false;
+    contourBuiltAt = Date.now();
+  }
+
+  // Called every frame from updateFrame; returns whether the far (contour) view is active.
+  function updateContourView() {
+    const on = camera.positionCartographic.height > CONTOUR_ABOVE_M && markers.length > 0;
+    if (on && contourDirty && Date.now() - contourBuiltAt > (contourGrid ? CONTOUR_REFRESH_MS : 0)) paintContours();
+    if (contourPrimitive.show !== on) contourPrimitive.show = on;
+    return on;
+  }
+
+  // Density under a tap in the far view, so tapping a contour zooms into it.
+  function contourDensityAt(lat, lng) {
+    if (!contourGrid) return 0;
+    return sampleGrid(contourGrid, (lng + 180) - 0.5, (90 - lat) - 0.5);
+  }
+
+  // Kotlin -> JS: markers, selection and camera.
+  const iconCache = new Map(); // iconKey -> data URL; Kotlin sends each icon's image only once
+  window.setMarkers = (list, selected) => {
+    markers = list || [];
+    for (const m of markers) {
+      if (!m.iconKey) continue;
+      if (m.icon) iconCache.set(m.iconKey, m.icon); else m.icon = iconCache.get(m.iconKey);
+    }
+    markersById = new Map(markers.map((m) => [m.id, m]));
+    for (const id of groundById.keys()) if (!markersById.has(id)) groundById.delete(id);
+    selectedId = selected;
+    contourDirty = true;
+    drawMarkers();
+  };
+  // Selected flight's path: solid trail where it has been, dashed line where it is heading.
+  let trailEntities = [];
+  window.setTrajectory = (t) => {
+    for (const e of trailEntities) viewer.entities.remove(e);
+    trailEntities = [];
+    if (t) {
+      if (t.past && t.past.length >= 6) trailEntities.push(viewer.entities.add({ polyline: {
+        positions: Cesium.Cartesian3.fromDegreesArrayHeights(t.past), width: 3,
+        material: Cesium.Color.fromCssColorString('#1b7f5b'), clampToGround: false } }));
+      if (t.ahead && t.ahead.length >= 6) trailEntities.push(viewer.entities.add({ polyline: {
+        positions: Cesium.Cartesian3.fromDegreesArrayHeights(t.ahead), width: 2,
+        material: new Cesium.PolylineDashMaterialProperty({ color: Cesium.Color.fromCssColorString('#1b7f5b').withAlpha(0.65), dashLength: 14 }),
+        clampToGround: false } }));
+    }
+    scene.requestRender();
+  };
+  function flyTo(lng, lat, height) {
+    markInteraction(); // a programmatic move is not the idle spin's to cancel
+    camera.flyTo({ destination: Cesium.Cartesian3.fromDegrees(lng, lat, Math.min(height, MAX_ALT_M)), duration: 1.8,
+      easingFunction: Cesium.EasingFunction.CUBIC_IN_OUT });
+  }
+  window.flyTo = (lng, lat, height) => flyTo(lng, lat, height);
+  window.setFlat = (flat) => {
+    if (flat && scene.mode !== Cesium.SceneMode.SCENE2D) scene.morphTo2D(0);
+    if (!flat && scene.mode !== Cesium.SceneMode.SCENE3D) scene.morphTo3D(0);
+  };
+  window.setTheme = (dark) => { darkTheme = !!dark; applyTheme(); };
+
+  // JS -> Kotlin: taps. drillPick returns every primitive under the finger, so a point hidden behind
+  // another, or a label, still responds. A cluster badge zooms in on its members instead.
+  new Cesium.ScreenSpaceEventHandler(scene.canvas).setInputAction((e) => {
+    const picks = scene.drillPick(e.position, 5);
+    for (const picked of picks) {
+      if (!picked || typeof picked.id !== 'string') continue;
+      if (picked.id.startsWith('cluster:')) {
+        const centre = clusterCentres[Number(picked.id.slice('cluster:'.length))];
+        if (centre) {
+          const height = Math.max(camera.positionCartographic.height * 0.4, 50000);
+          camera.flyTo({ destination: Cesium.Cartesian3.fromDegrees(centre.lng, centre.lat, height), duration: 1.0 });
+        }
+        return;
+      }
+      bridge.onMarkerClick(picked.id);
+      return;
+    }
+    if (contourPrimitive.show) {
+      const hit = camera.pickEllipsoid(e.position, scene.globe.ellipsoid);
+      if (hit) {
+        const c = Cesium.Cartographic.fromCartesian(hit);
+        const lat = Cesium.Math.toDegrees(c.latitude), lng = Cesium.Math.toDegrees(c.longitude);
+        if (contourDensityAt(lat, lng) >= BAND_BASE) {
+          const height = Math.max(camera.positionCartographic.height * 0.35, 1500000);
+          camera.flyTo({ destination: Cesium.Cartesian3.fromDegrees(lng, lat, height), duration: 1.0 });
+          return;
+        }
+      }
+    }
+    bridge.onMapTap();
+  }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+  // JS -> Kotlin: camera height and visible area after each move or mode change
+  function reportCamera() {
+    const height = camera.positionCartographic.height;
+    const rect = camera.computeViewRectangle(scene.globe.ellipsoid);
+    // Ground point under the screen centre; falls back to the point below the camera when it misses the globe.
+    const c = scene.canvas;
+    const hit = camera.pickEllipsoid(new Cesium.Cartesian2(c.clientWidth / 2, c.clientHeight / 2), scene.globe.ellipsoid);
+    const centre = hit ? Cesium.Cartographic.fromCartesian(hit) : camera.positionCartographic;
+    if (bridge.onCameraCenter) bridge.onCameraCenter(Cesium.Math.toDegrees(centre.latitude), Cesium.Math.toDegrees(centre.longitude));
+    if (rect) {
+      bridge.onCamera(height,
+        Cesium.Math.toDegrees(rect.south), Cesium.Math.toDegrees(rect.north),
+        Cesium.Math.toDegrees(rect.west), Cesium.Math.toDegrees(rect.east));
+    } else {
+      bridge.onCamera(height, -90, 90, -180, 180);
+    }
+  }
+  // Navigation commands from the on-screen controls (see MapNavControls.kt).
+  const RAD = Cesium.Math.toRadians(1);
+  function reportHeading() {
+    bridge.onHeading(Cesium.Math.toDegrees(camera.heading));
+    bridge.onPitch(Cesium.Math.toDegrees(camera.pitch));
+  }
+  function centerPoint() {
+    const c = new Cesium.Cartesian2(scene.canvas.clientWidth / 2, scene.canvas.clientHeight / 2);
+    return camera.pickEllipsoid(c, scene.globe.ellipsoid);
+  }
+  // Far view: the Earth's centre stays on the device centre. Above EARTH_LOCK_ABOVE_M the camera always looks
+  // at the middle of the planet, so pan, zoom and rotate move the camera around the globe instead of letting
+  // it drift. Tilt has no meaning while the view points at the centre, so tilt does nothing in this mode.
+  const EARTH_LOCK_ABOVE_M = 1000000;
+  const EARTH_RADIUS_M = Cesium.Ellipsoid.WGS84.maximumRadius;
+  const MIN_ALT_M = 10;              // closest the camera gets to the ground (2D and 3D)
+  const MAX_ALT_M = 100000000;       // farthest zoom: 100,000 km
+  const START_ALT_M = 20000000;      // every load starts here: 20,000 km
+  const PINCH_STEP_M = 10000000;     // one half-screen pinch moves 10,000 km
+  const PINCH_CLOSE_FRACTION = 0.5;  // below 20,000 km the step is half the height
+  function earthLocked() {
+    return scene.mode === Cesium.SceneMode.SCENE3D &&
+      Cesium.Cartesian3.magnitude(camera.position) - EARTH_RADIUS_M > EARTH_LOCK_ABOVE_M;
+  }
+  function towardEarthCentre() {
+    return Cesium.Cartesian3.normalize(Cesium.Cartesian3.negate(camera.position, new Cesium.Cartesian3()), new Cesium.Cartesian3());
+  }
+  // Re-aims the camera at the Earth's centre when it has drifted. Returns true if the camera was moved.
+  function faceEarthCentre() {
+    if (!earthLocked()) return false;
+    const toCentre = towardEarthCentre();
+    // Idle globes already point at the centre, so this stays a cheap no-op and does not re-render.
+    if (Cesium.Cartesian3.dot(toCentre, camera.direction) > 1 - 1e-10) return false;
+    camera.setView({ destination: Cesium.Cartesian3.clone(camera.position), orientation: { direction: toCentre, up: camera.up } });
+    return true;
+  }
+  // Camera height above the globe. In 2D the camera position is on the flat map, so use Cesium's height there.
+  function altitudeNow() {
+    return scene.mode === Cesium.SceneMode.SCENE3D
+      ? Cesium.Cartesian3.magnitude(camera.position) - EARTH_RADIUS_M
+      : camera.positionCartographic.height;
+  }
+  // Sets the camera height, kept within MIN_ALT_M..MAX_ALT_M. Far out, or while aimed at the centre, the camera
+  // moves straight out or in so the Earth stays centred; close up it moves along the view.
+  function setAltitude(newAlt) {
+    const target = Cesium.Math.clamp(newAlt, MIN_ALT_M, MAX_ALT_M);
+    const current = altitudeNow();
+    if (Math.abs(target - current) < 1) return;
+    const is3D = scene.mode === Cesium.SceneMode.SCENE3D;
+    if (is3D && (earthLocked() || Cesium.Cartesian3.dot(towardEarthCentre(), camera.direction) > 0.999)) {
+      const outward = Cesium.Cartesian3.normalize(camera.position, new Cesium.Cartesian3());
+      const destination = Cesium.Cartesian3.multiplyByScalar(outward, EARTH_RADIUS_M + target, new Cesium.Cartesian3());
+      camera.setView({ destination, orientation: { direction: camera.direction, up: camera.up } });
+    } else if (target < current) camera.zoomIn(current - target);
+    else camera.zoomOut(target - current);
+    scene.requestRender();
+  }
+  function orbitEarth(dHeadingDeg, rangeScale) {
+    if (rangeScale !== 1) setAltitude(altitudeNow() * rangeScale);
+    if (dHeadingDeg) (dHeadingDeg > 0 ? camera.twistRight : camera.twistLeft).call(camera, Math.abs(dHeadingDeg) * RAD);
+    faceEarthCentre();
+    scene.requestRender();
+    reportHeading();
+  }
+  // Orbit around the point at the screen centre: heading/tilt change, or scale the range to zoom.
+  function orbit(dHeadingDeg, dPitchDeg, rangeScale) {
+    if (earthLocked()) return orbitEarth(dHeadingDeg, rangeScale);
+    const flat = scene.mode !== Cesium.SceneMode.SCENE3D;
+    const target = flat ? null : centerPoint();
+    if (!target) {
+      if (rangeScale !== 1) setAltitude(altitudeNow() * rangeScale);
+      scene.requestRender();
+      return;
+    }
+    const frame = Cesium.Transforms.eastNorthUpToFixedFrame(target);
+    const range = Cesium.Cartesian3.distance(camera.position, target) * rangeScale;
+    const pitch = Cesium.Math.clamp(camera.pitch + dPitchDeg * RAD, -Math.PI / 2, -5 * RAD);
+    camera.lookAtTransform(frame, new Cesium.HeadingPitchRange(camera.heading + dHeadingDeg * RAD, pitch, range));
+    camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+    scene.requestRender();
+    reportHeading();
+  }
+  // Slide along the ground relative to the current heading. dx = right, dy = forward (screen up).
+  function pan(dx, dy) {
+    if (scene.mode !== Cesium.SceneMode.SCENE3D) {
+      const step = camera.positionCartographic.height * 0.25;
+      if (dx) (dx > 0 ? camera.moveRight : camera.moveLeft).call(camera, step);
+      if (dy) (dy > 0 ? camera.moveUp : camera.moveDown).call(camera, step);
+      scene.requestRender();
+      return;
+    }
+    const carto = camera.positionCartographic;
+    const step = Math.max(carto.height, 50) * 0.25;
+    const h = camera.heading;
+    const east = (dx * Math.cos(h) + dy * Math.sin(h)) * step;
+    const north = (-dx * Math.sin(h) + dy * Math.cos(h)) * step;
+    const lat = Cesium.Math.clamp(carto.latitude + north / 6378137, -85 * RAD, 85 * RAD);
+    const lng = carto.longitude + east / (6378137 * Math.max(Math.cos(carto.latitude), 0.05));
+    camera.setView({
+      destination: Cesium.Cartesian3.fromRadians(lng, lat, carto.height),
+      orientation: { heading: camera.heading, pitch: camera.pitch, roll: 0 },
+    });
+    scene.requestRender();
+  }
+  const navImpl = (cmd) => {
+    markInteraction();
+    switch (cmd) {
+      case 'zoomIn': return orbit(0, 0, 0.6);
+      case 'zoomOut': return orbit(0, 0, 1 / 0.6);
+      case 'left': return pan(-1, 0);
+      case 'right': return pan(1, 0);
+      case 'forward': return pan(0, 1);
+      case 'back': return pan(0, -1);
+      case 'rotateCw': return orbit(-15, 0, 1);
+      case 'rotateCcw': return orbit(15, 0, 1);
+      case 'tiltUp': return orbit(0, 10, 1);
+      case 'tiltDown': return orbit(0, -10, 1);
+      case 'north': case 'reset': {
+        if (earthLocked()) {
+          // Keep the centre lock; north-up is the component of the planet's pole perpendicular to the view.
+          const dir = towardEarthCentre();
+          const pole = Cesium.Cartesian3.UNIT_Z;
+          const north = Cesium.Cartesian3.normalize(Cesium.Cartesian3.subtract(pole,
+            Cesium.Cartesian3.multiplyByScalar(dir, Cesium.Cartesian3.dot(pole, dir), new Cesium.Cartesian3()),
+            new Cesium.Cartesian3()), new Cesium.Cartesian3());
+          camera.setView({ destination: Cesium.Cartesian3.clone(camera.position), orientation: { direction: dir, up: north } });
+          scene.requestRender();
+          reportHeading();
+          return;
+        }
+        const target = scene.mode === Cesium.SceneMode.SCENE3D ? centerPoint() : null;
+        if (!target) return;
+        const frame = Cesium.Transforms.eastNorthUpToFixedFrame(target);
+        const range = Cesium.Cartesian3.distance(camera.position, target);
+        const pitch = cmd === 'reset' ? -Math.PI / 2 : camera.pitch;
+        camera.lookAtTransform(frame, new Cesium.HeadingPitchRange(0, pitch, range));
+        camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+        scene.requestRender();
+        reportHeading();
+      }
+    }
+  };
+
+  window.nav = (cmd) => { navImpl(cmd); reportHeading(); };
+
+  // Every frame: keep the Earth's centre on the device centre in the far view (no-op once it already is).
+  scene.preRender.addEventListener(() => { if (faceEarthCentre()) scene.requestRender(); });
+  camera.moveEnd.addEventListener(() => { reportHeading(); reportCamera(); requestPlan(); });
+  scene.morphComplete.addEventListener(() => { drawMarkers(true); reportCamera(); });
+
+  // Zoom input. Cesium's own zoom is off. A pinch moves a fixed distance, PINCH_STEP_M per half screen of
+  // finger travel, so a small pinch moves a little and a big one moves more; the height stays within
+  // MIN_ALT_M..MAX_ALT_M. The wheel keeps a proportional step.
+  scene.screenSpaceCameraController.enableZoom = false;
+  const zoomCanvas = scene.canvas;
+  zoomCanvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    setAltitude(altitudeNow() * (e.deltaY > 0 ? 1.15 : 1 / 1.15));
+  }, { passive: false });
+  const touches = new Map();
+  let pinchGap = 0;
+  const touchGap = () => {
+    const [a, b] = [...touches.values()];
+    return Math.hypot(a.x - b.x, a.y - b.y);
+  };
+  zoomCanvas.addEventListener('pointerdown', (e) => {
+    touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (touches.size === 2) pinchGap = touchGap();
+  });
+  zoomCanvas.addEventListener('pointermove', (e) => {
+    if (!touches.has(e.pointerId)) return;
+    touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (touches.size !== 2) return;
+    const gap = touchGap();
+    // Spreading the fingers moves toward the globe (lower height); pinching in moves away.
+    const halfScreen = Math.min(zoomCanvas.clientWidth, zoomCanvas.clientHeight) / 2;
+    // The step is PINCH_STEP_M far out and shrinks with height below that, so close zoom stays usable.
+    if (pinchGap > 0 && gap > 0 && halfScreen > 0) {
+      const alt = altitudeNow();
+      const step = Math.min(PINCH_STEP_M, alt * PINCH_CLOSE_FRACTION);
+      setAltitude(alt - (gap - pinchGap) / halfScreen * step);
+    }
+    pinchGap = gap;
+  });
+  const endTouch = (e) => {
+    touches.delete(e.pointerId);
+    pinchGap = touches.size === 2 ? touchGap() : 0;
+  };
+  zoomCanvas.addEventListener('pointerup', endTouch);
+  zoomCanvas.addEventListener('pointercancel', endTouch);
+
+  // Polar axis: the planet's rotation axis, fixed to the planet (ECEF, z = pole to pole). Hidden in 2D.
+  // The axis runs through the planet's interior, so only the two ends outside the globe are drawn: from each
+  // pole (at the WGS84 polar radius) out to 5 Earth radii. The segment inside the globe is never drawn, so it
+  // cannot appear to cross the surface.
+  const POLAR_RADIUS_M = Cesium.Ellipsoid.WGS84.minimumRadius;
+  const axisMaterial = () => new Cesium.PolylineDashMaterialProperty({
+    color: Cesium.Color.fromCssColorString('#ffffff').withAlpha(0.7),
+    gapColor: Cesium.Color.TRANSPARENT,
+    dashLength: 6, // short dashes with small gaps read as dots at this width
+  });
+  const axisEnds = [
+    [new Cesium.Cartesian3(0, 0, POLAR_RADIUS_M), new Cesium.Cartesian3(0, 0, EARTH_RADIUS_M * 5)],
+    [new Cesium.Cartesian3(0, 0, -POLAR_RADIUS_M), new Cesium.Cartesian3(0, 0, -EARTH_RADIUS_M * 5)],
+  ].map((positions) => viewer.entities.add({ polyline: {
+    positions,
+    width: 2,
+    material: axisMaterial(),
+    arcType: Cesium.ArcType.NONE,
+  } }));
+  const setAxisShown = (shown) => axisEnds.forEach((e) => { e.show = shown; });
+
+  // Idle spin: when nothing is selected and the user has not touched or moved the camera for a while, the
+  // globe turns slowly about its polar axis (the camera orbits the centre, which stays on screen).
+  // Spin speed is SPIN_DEG_PER_S at START_ALT_M (20,000 km) and scales with height, so the surface moves at
+  // a similar apparent speed on screen whether the globe is near or far. Clamped to 1/4x .. 5x.
+  const SPIN_DEG_PER_S = 5.0;
+  const spinRateDegPerS = () => SPIN_DEG_PER_S * Cesium.Math.clamp(altitudeNow() / START_ALT_M, 0.25, 5);
+  const IDLE_MS = 5000;
+  let lastInteraction = performance.now();
+  const markInteraction = () => { lastInteraction = performance.now(); };
+  zoomCanvas.addEventListener('pointerdown', markInteraction, { passive: true });
+  zoomCanvas.addEventListener('wheel', markInteraction, { passive: true });
+  // The spin moves the camera itself, and Cesium reports that as moveStart/moveEnd (moveEnd arrives about half a
+  // second after the last step). Counting those as user input restarted the idle wait every few seconds, so the
+  // globe only crept a little at a time. Camera events inside the grace window after a spin step are ignored;
+  // touch, wheel, flyTo and the nav buttons mark interaction directly.
+  let lastSpinStepAt = -Infinity;
+  const SPIN_EVENT_GRACE_MS = 1500;
+  const markCameraMove = () => { if (performance.now() - lastSpinStepAt > SPIN_EVENT_GRACE_MS) markInteraction(); };
+  camera.moveStart.addEventListener(markCameraMove);
+  camera.moveEnd.addEventListener(markCameraMove);
+  let lastSpinTick = performance.now();
+  let lastSpinReport = 0;
+  const spinRotation = new Cesium.Matrix3();
+  setInterval(() => {
+    const now = performance.now();
+    const dt = Math.min((now - lastSpinTick) / 1000, 0.1); // a hidden tab must not jump the globe on return
+    lastSpinTick = now;
+    setAxisShown(scene.mode === Cesium.SceneMode.SCENE3D);
+    const idle = selectedId == null && now - lastInteraction > IDLE_MS && earthLocked();
+    if (!idle) return;
+    lastSpinStepAt = now;
+    const rot =Cesium.Matrix3.fromRotationZ(spinRateDegPerS() * dt * RAD, spinRotation);
+    camera.setView({
+      destination: Cesium.Matrix3.multiplyByVector(rot, camera.position, new Cesium.Cartesian3()),
+      orientation: {
+        direction: Cesium.Matrix3.multiplyByVector(rot, camera.direction, new Cesium.Cartesian3()),
+        up: Cesium.Matrix3.multiplyByVector(rot, camera.up, new Cesium.Cartesian3()),
+      },
+    });
+    scene.requestRender();
+    // Spinning does not fire camera move events, so refresh the readouts now and then.
+    if (now - lastSpinReport > 500) { lastSpinReport = now; reportCamera(); }
+  }, 33);
+
+  // Every load starts at the same height, before the first frame is shown.
+  camera.setView({ destination: Cesium.Cartesian3.fromDegrees(0, 0, START_ALT_M),
+    orientation: { heading: 0, pitch: -Math.PI / 2, roll: 0 } });
+
+  bridge.onReady();
+  reportCamera();
+})().catch((err) => window.Android && window.Android.onError(String(err && err.stack || err)));
+</script>
+</body>
+</html>

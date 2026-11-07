@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">Idioma</string>
+    <string name="settings_map_provider">Proveedor de mosaicos</string>
+    <string name="settings_map_theme">Tema del mapa</string>
+    <string name="settings_globe_preset">Preajuste visual</string>
+    <string name="settings_theater_presets">Paquetes de cobertura</string>
+    <string name="settings_stream_quality">Calidad de video</string>
+    <string name="settings_stream_idle_stop">Detener vídeo en directo cuando está inactivo</string>
+</resources>

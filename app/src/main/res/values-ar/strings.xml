@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">اللغة</string>
+    <string name="settings_map_provider">مزود بلاطات الخريطة</string>
+    <string name="settings_map_theme">سمة الخريطة</string>
+    <string name="settings_globe_preset">الإعداد البصري</string>
+    <string name="settings_theater_presets">مجموعات التغطية</string>
+    <string name="settings_stream_quality">جودة الفيديو</string>
+    <string name="settings_stream_idle_stop">إيقاف الفيديو المباشر عند عدم النشاط</string>
+</resources>

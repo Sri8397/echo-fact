@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">Jezik</string>
+    <string name="settings_map_provider">Davatelj karata</string>
+    <string name="settings_map_theme">Tema Karte</string>
+    <string name="settings_globe_preset">Vizualni Predpreset</string>
+    <string name="settings_theater_presets">Paketi pokrivenosti</string>
+    <string name="settings_stream_quality">Kvaliteta videa</string>
+    <string name="settings_stream_idle_stop">Zaustavi live video kada je korisnik neaktivan</string>
+</resources>

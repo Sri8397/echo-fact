@@ -1,0 +1,145 @@
+{
+ "military": [
+  {
+   "id": "military:34.6,-94.7",
+   "domain": "military",
+   "title": "Strike packaging detected — Unknown/USA",
+   "score": 32,
+   "trend": "stable",
+   "location": {
+    "lat": 34.57433360079053,
+    "lon": -94.67862982626416,
+    "label": "34.6,-94.7"
+   },
+   "countries": [
+    "Unknown",
+    "USA",
+    "Australia",
+    "Brazil",
+    "Netherlands"
+   ],
+   "timestamp": 1793991742067,
+   "signals": []
+  },
+  {
+   "id": "military:-21.3,-46.3",
+   "domain": "military",
+   "title": "Military flight cluster — Brazil/Unknown",
+   "score": 32,
+   "trend": "stable",
+   "location": {
+    "lat": -21.310460333333335,
+    "lon": -46.264643636142225,
+    "label": "-21.3,-46.3"
+   },
+   "countries": [
+    "Brazil",
+    "Unknown"
+   ],
+   "timestamp": 1793991742067,
+   "signals": []
+  },
+  {
+   "id": "military:41.8,-112.0",
+   "domain": "military",
+   "title": "Military flight cluster — USA",
+   "score": 22,
+   "trend": "stable",
+   "location": {
+    "lat": 41.81202866666666,
+    "lon": -111.96663173918795,
+    "label": "41.8,-112.0"
+   },
+   "countries": [
+    "USA"
+   ],
+   "timestamp": 1793991742067,
+   "signals": []
+  }
+ ],
+ "escalation": [
+  {
+   "id": "escalation:RU",
+   "domain": "escalation",
+   "title": "conflict + news escalation — RU",
+   "score": 44,
+   "trend": "stable",
+   "location": {
+    "lat": 60,
+    "lon": 100,
+    "label": "RU"
+   },
+   "countries": [
+    "RU"
+   ],
+   "timestamp": 1793991742079,
+   "signals": []
+  },
+  {
+   "id": "escalation:IR",
+   "domain": "escalation",
+   "title": "conflict + news escalation — IR",
+   "score": 44,
+   "trend": "stable",
+   "location": {
+    "lat": 33.875,
+    "lon": 52.257400000000004,
+    "label": "IR"
+   },
+   "countries": [
+    "IR"
+   ],
+   "timestamp": 1793991742079,
+   "signals": []
+  }
+ ],
+ "economic": [],
+ "disaster": [
+  {
+   "id": "disaster:36.2,141.3",
+   "domain": "disaster",
+   "title": "Disaster cascade: M6.1 seismic — 144 km SE of Hasaki, Japan",
+   "score": 43,
+   "trend": "stable",
+   "location": {
+    "lat": 36.20673333333334,
+    "lon": 141.34303116246917,
+    "label": "36.2,141.3"
+   },
+   "countries": [],
+   "timestamp": 1793991742081,
+   "signals": []
+  },
+  {
+   "id": "disaster:-20.2,-178.1",
+   "domain": "disaster",
+   "title": "Disaster cascade: M6.1 seismic — Fiji region",
+   "score": 43,
+   "trend": "stable",
+   "location": {
+    "lat": -20.23375,
+    "lon": -178.10985,
+    "label": "-20.2,-178.1"
+   },
+   "countries": [],
+   "timestamp": 1793991742081,
+   "signals": []
+  },
+  {
+   "id": "disaster:39.3,73.3",
+   "domain": "disaster",
+   "title": "Disaster cascade: M5.2 seismic — 99 km ESE of Kyzyl-Eshme, Kyrgyzstan",
+   "score": 35,
+   "trend": "stable",
+   "location": {
+    "lat": 39.32795,
+    "lon": 73.3374,
+    "label": "39.3,73.3"
+   },
+   "countries": [],
+   "timestamp": 1793991742081,
+   "signals": []
+  }
+ ],
+ "computedAt": 1793991742062
+}

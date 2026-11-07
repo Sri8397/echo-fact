@@ -1,0 +1,437 @@
+{
+ "categories": {
+  "asia": {
+   "items": [
+    {
+     "source": "South China Morning Post",
+     "title": "EU-China truce under strain as both sides brace for potential trade war - South China Morning Post",
+     "link": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNbjVtNGU1dEM3bzhWMDFrSVNJdEhyajJKSG1sS1pUWGdBX084eVRkQ2x6MGd5RWV6bm5GTE9xbVdZRHhZR1M3UzYwekh0MGZOXzJJcTRzUmtlZjN3LU1qMHNPTkhUQmE0Zm5QLXEzLWMtcXUySFotUS1VV0luZzdyUE1acVdtd0VUZC1LaWJSMkV6dThfVWZ1SGxDQWJZZ29zcUY5STREX2pRd3g3Z1pRbVg5c3Q2VVhYU0HSAboBQVVfeXFMTzFXVmdua3JUbjNFTGZWT2o3VjdVUVBmQXVKSWI3VmJmZkJhVTl1ZFBpZm5KZU0xNXB1bktfNDJxMWlQTk1QQWVGdnJ1SE10NHZwVWtlQWxaOE5FMmZnQi1QX0tMQVZVdkFQSjFBOXA2YzVweTJHaGJiMF9nNjdBNmFSWnNpWDlaVUFoaC1ZbW1SSmlkbTVXRUxEaElYTUhTYTFpQXZDU282cEJKWk1hVUpYNWtYd1ozLWhB?oc=5",
+     "publishedAt": 1793939877000,
+     "importanceScore": 82
+    },
+    {
+     "source": "Japan Times",
+     "title": "Magnitude 6.1 quake hits off Tokyo, but no tsunami alert issued - The Japan Times",
+     "link": "https://news.google.com/rss/articles/CBMie0FVX3lxTE9mSTAwNkVDNkswUXRxYlBoZ3hMRGF3YmZfaTR0SmpOYlJvY2h0R1FUY25wWGNBRHdqRkhXalNLcmZXT2EtTVdEaU9tZlNGdm1LLXAxRlBmeUl0UEpJdjZQVFFEbXhQV2Y4VnI4Sm1qOGljX2dUd1d6NVhnYw?oc=5",
+     "publishedAt": 1793968080000,
+     "importanceScore": 67
+    },
+    {
+     "source": "RFE/RL Central Asia",
+     "title": "White House Outlines Broader European Security Plan Ahead Of Ukraine Peace Talks - Radio Free Europe/Radio Liberty",
+     "link": "https://news.google.com/rss/articles/CBMiugFBVV95cUxOVHkxVHdpNVBGbUMxeUxMSTdScUNJZmRCd1hrbjJoalZQeGhQM3A3UllodE1hR0ZLRy10RlpFOVh0LUJOY3hEUk94cnlLVW9TSFQwVFFORmw0MEJkMzZ2VUhCV0U5OXIxUW5YYXpIUGpFRURMVjhOM1RjZzRvQnhnd25hZHhtTU9XeFJwdWZjOUlsbFdIYjFsbnczNmw4U2RmMk43ampqdW5ZU3VXWkpWd1VvTVo4ZlhsM0HSAbwBQVVfeXFMTjFnZ2ZIYUFZelRDZGJJREtFVC04ekJKV3ZEcHlTZEE4UldNQmdxWFJadkx2S0pqWlRCb0JaUi1FY3FmT1EySXhmakdOc0tZS2RqZkdScV92c1djaUtJTTZYRi1VaEFDdFVTaUp6MTl5dWZBYTV5dHIzMXVYbDBSTVEwZHI4UVpSdy1oS21pNVhzQ1NjaVl2WUc5blFNSjluQ2VzNGpFVzJlY0NwVDRROEpkVzFDYUliTHZnc1A?oc=5",
+     "publishedAt": 1793950622000,
+     "importanceScore": 66
+    }
+   ]
+  },
+  "politics": {
+   "items": [
+    {
+     "source": "CNN World",
+     "title": "Trump’s latest Ukraine offer may only tempt Putin to step up his war - CNN",
+     "link": "https://news.google.com/rss/articles/CBMiggFBVV95cUxNdmhLdEFhNEhJcUhIaGQ5UEwwSzRNdjQwWFZhRmN3T3ZoNDU2QWtwSUx5dzBkcXlabFNiSWFsVWI3Ul93VG1lajJmbk9reGpZZ0w1NVdTMVVCRUhaNE5SM3lSb2NHdm1jTnFLZDJvWW5NaWFVNF8yR29xMTJFZk5QZEhR?oc=5",
+     "publishedAt": 1793985111000,
+     "importanceScore": 68
+    },
+    {
+     "source": "BBC World",
+     "title": "Kenyan doomsday cult leader given life sentence for murdering 191 people",
+     "link": "https://www.bbc.co.uk/news/articles/cm5yne5984l0o?at_medium=RSS&at_campaign=rss",
+     "publishedAt": 1793976363000,
+     "importanceScore": 54
+    },
+    {
+     "source": "CNN World",
+     "title": "Hundreds of thousands march in France’s biggest day of protests in years. Here’s what we know - CNN",
+     "link": "https://news.google.com/rss/articles/CBMigwFBVV95cUxOQWt4RGxMazZsVTUwLUNMYVlqWkpQb21pdXFHSmF2c2hMNXFySzdvVTlJbmFoSWVfZGQ4Ny1PcTgtV0p1U3NueXhkd1F1a1lTUFFET2d1T2tkS1g4WEZUUnQ5MXNMWnR3cHFoTm1mRl9sc3Q2Y2NGZEpBQlp3QTNSWGxncw?oc=5",
+     "publishedAt": 1793913132000,
+     "importanceScore": 46
+    }
+   ]
+  },
+  "us": {
+   "items": [
+    {
+     "source": "CBC News",
+     "title": "Republicans ran away from Trump's Canadian tariffs, but not far enough",
+     "link": "https://www.cbc.ca/news/politics/midterms-canada-tariffs-trade-war-canada-9.7410974?cmp=rss",
+     "publishedAt": 1793955600000,
+     "importanceScore": 56
+    },
+    {
+     "source": "CTV News",
+     "title": "Hoekstra downplays Democrats’ sway on tariffs, but predicts deal could come soon - CTV News",
+     "link": "https://news.google.com/rss/articles/CBMiugFBVV95cUxQdFQ3c3M4U0hzbjg2b0NBQ2R3cy1HU2V0OE9SWEdxWXhPbFhLWEpPUGNGSlFSMXdBOGE3blhWUGpZUHVqb2M5TXhtRTFxUmN5N0ZtOGJMMDZNbXUzVzlyWjNwNVlNaWh6bkFfMXJTNHJ6SjViM01LREROUmdzTllJNDZfMzhfRG5pT2ltZGktSEZwYUNicFlsOVNCYjFXdkdqOEUtTWx0UVRUUFFyNUtXM1VnUW53UFl4SXc?oc=5",
+     "publishedAt": 1793985663000,
+     "importanceScore": 55
+    },
+    {
+     "source": "The Narwhal",
+     "title": "The military uses a Manitoba park for survival training. Some are worried about the wildfire risk",
+     "link": "https://thenarwhal.ca/manitoba-nopiming-provincial-park-military-use/?utm_source=rss",
+     "publishedAt": 1793962800000,
+     "importanceScore": 47
+    }
+   ]
+  },
+  "europe": {
+   "items": [
+    {
+     "source": "Hromadske EN",
+     "title": "Kyiv Independent reports system breach after readers receive fake nuclear attack warning - Hromadske",
+     "link": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxQRHZNaEIxV3VmS0NSbVFqRDdDbUo0MWpUODJjcDVrV1o0MWZHcnZieDNmM3BtOE5RbTdhMjUyZDJad2dRNVJMdkw5V0NaMUNHR3JBZGFOWlQ3T216dkd6NjJjaFFGYU1PNW50QUhVcXUxaWJmTjZnbmZwV1ZqQUVGdkthR0pCSHJUWnh3bEdzclVzMjYxUTM1dUlrbkZpaE80OVA3cWpxa2dDb3JRWlkzYWFfS3pQaUpLdHFRRVBrRlrSAcYBQVVfeXFMTlpEWFQ1QW1VU0xHVjYwaTgwU0Vua3BKeDNMX0VmMWxiTEh1S2V5dXFNaF95UGFjZElfejQtMFdSTmRrbnZqb2QxT2hLX09ESmdTeUdZVS1Pc1M4eWpOV0c3TE5fbVNfem1tajFjVG1aV0hrVThpTUxmSzBBWlEzV1MzVG9zSE5CMFh5WmRpQnJBR21FbFBzYXg3WjBCNDR0T1RFT2F0ejdkSmNiS2RFelJVREFncVBBRkFOTG0tSTV5QTcteHNn?oc=5",
+     "publishedAt": 1793791860000,
+     "importanceScore": 73
+    },
+    {
+     "source": "DW News",
+     "title": "Iran war: Gulf tanker attacked, 1 seaferer killed",
+     "link": "https://www.dw.com/en/iran-war-gulf-tanker-attacked-1-seaferer-killed/a-79879270?maca=en-rss-en-all-1573-xml-mrss",
+     "publishedAt": 1793987220000,
+     "importanceScore": 69
+    },
+    {
+     "source": "Ukrinform",
+     "title": "Russian army loses 2,440 troops in war against Ukraine over past day - Ukrinform",
+     "link": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxPdkJQZm1ZenprclBsX2ZRb0xCY1ZTejF1NDFPQ3EyZDQybzNNOUtReXR0UEVSbE1tSnZ3WkJ4QTkwZWtjdXhlQy1LYXBEb0N6b2dsX05XS2xRN09yTlFuUHlSdjJCN3VtQkROWElpbUtjWERpVzNyM282RUlxU3NGOEQtNjNBVlhIYU1NQnJsZk5zRGphcTdlcmF0bjZOUE92Qmp3dDVrRWFLN0lnVnNidGhNc2RROEZR0gG-AUFVX3lxTE85N3lLN1l5YzF4QzBHcDB3d3ZUWThUTkJNSVg3S3ZMR1lTNTllNDBHUlNvMVlRZFhpbkN3NlFPN2ExSTFOVkZHc3dCem84dW5GSDAyVzI5b1I3T0VnUXREbkxSSXNzVDU5bU5uNkdiMnlFZ2t2Q0lsVThMaGxqa3pIeC04WjgzVEdMTDNCLWp5cFlPYVUwenJiako2dWo2ekZzVUpHVjl3dUo4SGRlSzd6WVdrVnBuVmFDSEFWQVE?oc=5",
+     "publishedAt": 1793946060000,
+     "importanceScore": 69
+    }
+   ]
+  },
+  "middleeast": {
+   "items": [
+    {
+     "source": "Haaretz",
+     "title": "Report: Trump Weighs Options for Resuming War With Iran, as Soon as November 9 - Haaretz",
+     "link": "https://news.google.com/rss/articles/CBMijgJBVV95cUxQY3ZzTnIydHp3SHBINm90cXZfeS1tNUxGblk3eW5KaTFJcGVtQ012a2xiSXN0aTRielROemVJUnJaWmRyLVJXeGdPNl9qZ01qWU9DZjlLSnc3ekFsUGZUcmVISUEzeTlucFVJNkF2enZlVzZQNjVGV0d0UGw0RHhpVzVHU2x2Yjk4eVp0QVdzRXJTTGFnS1lyTzE1OE1MRmNXckItbWhuQXBqRkRvLUQyU0FqUi14M0ItRWhpU0RqRG1ucVg2eXY3N3l1REt5UU11VUo5dEQ5RVZkLXFiakdtX1VPbVVWeG9OT3oxalVORmNxc2ZhcWdVZUhjQ3k1UWU4M0syRm5YVk5KbG5wa0E?oc=5",
+     "publishedAt": 1793966880000,
+     "importanceScore": 66
+    },
+    {
+     "source": "Egypt Independent",
+     "title": "Egypt condemns missile attack targeting Medina, reaffirms support for Saudi Arabia",
+     "link": "https://www.egyptindependent.com/egypt-condemns-missile-attack-targeting-medina-reaffirms-support-for-saudi-arabia/",
+     "publishedAt": 1793961793000,
+     "importanceScore": 66
+    },
+    {
+     "source": "BBC Middle East",
+     "title": "Major construction ongoing near Iran missile bases, satellite images suggest",
+     "link": "https://www.bbc.co.uk/news/articles/ckjrwx1r2d5ro?at_medium=RSS&at_campaign=rss",
+     "publishedAt": 1793950421000,
+     "importanceScore": 64
+    }
+   ]
+  },
+  "tech": {
+   "items": [
+    {
+     "source": "Wired",
+     "title": "Early Black Friday Mattress Deals: Get Up to 35% Off WIRED-Tested Favorites",
+     "link": "https://www.wired.com/story/best-early-black-friday-mattress-deals-11-6-2026/",
+     "publishedAt": 1793991087000,
+     "importanceScore": 28
+    },
+    {
+     "source": "Wired",
+     "title": "Free Chinese AI Models Are Getting Scary Good at Hacking",
+     "link": "https://www.wired.com/story/free-chinese-ai-models-are-getting-scary-good-at-hacking/",
+     "publishedAt": 1793990623000,
+     "importanceScore": 28
+    },
+    {
+     "source": "Wired",
+     "title": "AI Companies Really, Really Want to Buy Your Work Files and Emails",
+     "link": "https://www.wired.com/story/ai-companies-really-really-want-to-buy-your-work-files-and-emails/",
+     "publishedAt": 1793980800000,
+     "importanceScore": 27
+    }
+   ]
+  },
+  "ai": {
+   "items": [
+    {
+     "source": "The Verge AI",
+     "title": "Big Tech lost big in the 2026 election",
+     "link": "https://www.theverge.com/podcast/1028731/2026-midterms-tech-ai-vergecast",
+     "publishedAt": 1793983082000,
+     "importanceScore": 31
+    },
+    {
+     "source": "MIT Tech Review",
+     "title": "I watched a humanoid robot clean my apartment. It felt like a taste of the future.",
+     "link": "https://www.technologyreview.com/2026/11/06/1148090/i-watched-a-humanoid-robot-clean-my-apartment-it-felt-like-a-taste-of-the-future/",
+     "publishedAt": 1793959200000,
+     "importanceScore": 19
+    },
+    {
+     "source": "AI News",
+     "title": "What Shaped Anthropic CEO Dario Amodei’s Thinking on A.I. - The New York Times",
+     "link": "https://news.google.com/rss/articles/CBMiggFBVV95cUxNQzc5ME9TaVQ4MWd2dlgyempENHN0eTRwRDZ0NmN1Vlo3OTRLQWpIdjVsRDVJSnFTSGlyWlJzamtaelVoTHpuSnVITlpuT0VLUnFKUlZpOWFWb2V5UUdyVk5EU3lYb1BwSzFBQ2c0TDNZY3pmcXZFTkM4MXpscEk4V3pR?oc=5",
+     "publishedAt": 1793989761000,
+     "importanceScore": 18
+    }
+   ]
+  },
+  "finance": {
+   "items": [
+    {
+     "source": "Business Insider",
+     "title": "OpenAI CFO says blue tsunami ‘didn’t dramatically change’ IPO plans",
+     "link": "https://www.businessinsider.com/openai-data-centers-midterms-sarah-friar-ipo-plans-2026-11",
+     "publishedAt": 1793986897000,
+     "importanceScore": 69
+    },
+    {
+     "source": "CNBC",
+     "title": "San Francisco Fed President Daly says higher rates 'are likely to be needed' in inflation fight",
+     "link": "https://www.cnbc.com/2026/11/06/fed-daly-interest-rates-inflation.html",
+     "publishedAt": 1793990565000,
+     "importanceScore": 55
+    },
+    {
+     "source": "Reuters Business",
+     "title": "Markets fret over growth and inflation, just as tech rout gains speed - Reuters",
+     "link": "https://news.google.com/rss/articles/CBMinAFBVV95cUxONUh4V2hzQnA1Rk9zNTN6d3ZxcVZycGZQVmNUNjR3NmpXSmphZHh4LWZvaGJmTTVEWDdBc0lNWmZyUUp3MTFndk5uZl80Qnk0QXotRmo5S1g0MVhDejlwMjJlczNLVWY1eHRLZ1c4dExyOUNqdjJPaUFhVnE2WC16QUc4aTVfUlAwQUtKMktZYi1STk94cXBnSXF5OEQ?oc=5",
+     "publishedAt": 1793941740000,
+     "importanceScore": 55
+    }
+   ]
+  },
+  "commodities": {
+   "items": [
+    {
+     "source": "Oil & Gas",
+     "title": "Oil Prices Plunge as U.S. Elections Shake Up the Iran War - Crude Oil Prices Today | OilPrice.com",
+     "link": "https://news.google.com/rss/articles/CBMipgFBVV95cUxPWXgycURTcGxkYWNzYVlfaWY1bGRRRzlVNUU1emVaYTh1WnVtU2NFaXE5bDZzUUtodzVIQmRqY1R0a3hKdHh2Zng4SWZfdUdTMTVUZG9Dc3FieF9GRU9qQTlqWGZDTjBiRWVTQURWVXg4dVRXYmM1eXM3U2tFbktQUHFzS1B1SDBRODY3bjJLbm9pZlRObjZRWlYyWjlOdEVkZzZ5UXFn0gGrAUFVX3lxTE5hWDZCN0k2ZmlKOXc2ZHdOVElYYnpCb01tcjVxYzdpcHBvRGxwel9kWmt0S1ZVQjVCN0VkNUUxTWVtdlRRZm1OTjQ0UlRidUp1Z0U1cVRCQkVfN1lCaTMtMlN5My1SMW45WGM3UE53eDdOQ3hvb0FaVE5LSnFXUk5YY2ktbjVuTWZZNFgwZ25SQk1EOUozS1lESGxJdXJtMXNqQ3BtcHppV3pCaw?oc=5",
+     "publishedAt": 1793968200000,
+     "importanceScore": 57
+    },
+    {
+     "source": "Oil & Gas",
+     "title": "US Energy Chief Says Saudi Arabia Oil Pipeline Should Be Back Online Within Days - EnergyNow.com",
+     "link": "https://news.google.com/rss/articles/CBMisAFBVV95cUxOYVFfQURsRkJaa0lKTlJKRHN1WFlyNlgwSnZScEFqTW95MlJWTW9MT240ZXUzYjNnRTAzblVqSEhkX0xQaFVpSWpkbm9md1Y5MUNUMEY2c0tmUXNrZjdvT2dTa21xQ1o0ZVRYcHFJTTVlVk1sbXBVZm01d3FWd0FCdUo4WC1OS1VGaGMxcDRsc1ZwaGFYZ1ZEQmt6aEQzUXhuLUxtOGtBTjlOU2FnVDhRQQ?oc=5",
+     "publishedAt": 1793957599000,
+     "importanceScore": 28
+    },
+    {
+     "source": "Oil & Gas",
+     "title": "Oil prices set for sharp weekly fall after midterm elections as investors weigh Iran conflict risk - CNBC",
+     "link": "https://news.google.com/rss/articles/CBMib0FVX3lxTE5zQW9uWnVUd0hLODVnWG1oa29OUEJuQlFjLXNlMjhyZDdrNGl5T1MxRTJDQXJ0TUJNbXh4MDhaYk1DeUM2bHh1b3RsNWZ3Sm1zT05udHZJQ3JzWS16RXd3NjR0Qmt5UWtPQnRMbE5MWdIBdEFVX3lxTE9DMzBrTllWWDUtQmdHLV9fR0hwU21fcllTNWZ2bnZTRDlTNUthbmRnWk83V1NMYVZ3eTZZSl8tZnh5NGNGanN5VEtfYVIza0huQnR3S3NVRTl5bkpzaGF0R0d1LXdCcURLVlJYWHRwS2ljS2Uz?oc=5",
+     "publishedAt": 1793941616000,
+     "importanceScore": 26
+    }
+   ]
+  },
+  "gov": {
+   "items": [
+    {
+     "source": "UN News",
+     "title": "Sudan’s suffering is plain for all to see say aid teams, as brutal war continues",
+     "link": "https://news.un.org/feed/view/en/story/2026/11/1168753",
+     "publishedAt": 1793966400000,
+     "importanceScore": 71
+    },
+    {
+     "source": "White House",
+     "title": "First Lady Melania Trump Unites Russia and Ukraine at The White House Following Historic Ceasefire",
+     "link": "https://www.whitehouse.gov/briefings-statements/2026/11/first-lady-melania-trump-unites-russia-and-ukraine-at-the-white-house-following-historic-ceasefire/",
+     "publishedAt": 1793896267000,
+     "importanceScore": 69
+    },
+    {
+     "source": "UN News",
+     "title": "Abyei: Deadly drone strikes mark ‘new and concerning’ threat, UN peacekeeping chief warns",
+     "link": "https://news.un.org/feed/view/en/story/2026/11/1168749",
+     "publishedAt": 1793880000000,
+     "importanceScore": 64
+    }
+   ]
+  },
+  "africa": {
+   "items": [
+    {
+     "source": "Dabanga Sudan",
+     "title": "Australia sanctions El Burhan and Hemedti over Sudan war and human rights abuses",
+     "link": "https://www.dabangasudan.org/en/all-news/article/australia-sanctions-el-burhan-and-hemedti-over-sudan-war-and-human-rights-abuses",
+     "publishedAt": 1793979690000,
+     "importanceScore": 63
+    },
+    {
+     "source": "Africanews",
+     "title": "UN says struggling to help millions fleeing Sudan war find shelter",
+     "link": "http://www.africanews.com/2026/11/06/un-says-struggling-to-help-millions-fleeing-sudan-war-find-shelter/",
+     "publishedAt": 1793984434000,
+     "importanceScore": 58
+    },
+    {
+     "source": "ThisDay",
+     "title": "Gas Eruption: CSOs Demand National Emergency in Rivers Community",
+     "link": "https://www.thisdaylive.com/2026/11/06/gas-eruption-csos-demand-national-emergency-in-rivers-community/",
+     "publishedAt": 1793981580000,
+     "importanceScore": 54
+    }
+   ]
+  },
+  "latam": {
+   "items": [
+    {
+     "source": "Mexico News Daily",
+     "title": "Bucking expectations, Banxico lowers the interest rate, despite some inflation concerns",
+     "link": "https://mexiconewsdaily.com/business/bucking-expectations-banxico-lowers-interest-rate-despite-some-inflation-concerns/",
+     "publishedAt": 1793988757000,
+     "importanceScore": 55
+    },
+    {
+     "source": "InSight Crime",
+     "title": "Venezuela’s Airstrike on the ELN Tests 2 Decades of Chavista Tolerance",
+     "link": "https://insightcrime.org/news/venezuelas-airstrike-the-eln-tests-decades-chavista-tolerance/",
+     "publishedAt": 1793909579000,
+     "importanceScore": 50
+    },
+    {
+     "source": "InSight Crime",
+     "title": "Has Venezuela Declared War on Colombia’s ELN Guerrillas? | The InSight Take",
+     "link": "https://insightcrime.org/news/venezuela-declared-war-on-colombias-eln-insight-take/",
+     "publishedAt": 1793903146000,
+     "importanceScore": 49
+    }
+   ]
+  },
+  "energy": {
+   "items": [
+    {
+     "source": "Oil & Gas",
+     "title": "Oil Prices Plunge as U.S. Elections Shake Up the Iran War - Crude Oil Prices Today | OilPrice.com",
+     "link": "https://news.google.com/rss/articles/CBMipgFBVV95cUxPWXgycURTcGxkYWNzYVlfaWY1bGRRRzlVNUU1emVaYTh1WnVtU2NFaXE5bDZzUUtodzVIQmRqY1R0a3hKdHh2Zng4SWZfdUdTMTVUZG9Dc3FieF9GRU9qQTlqWGZDTjBiRWVTQURWVXg4dVRXYmM1eXM3U2tFbktQUHFzS1B1SDBRODY3bjJLbm9pZlRObjZRWlYyWjlOdEVkZzZ5UXFn0gGrAUFVX3lxTE5hWDZCN0k2ZmlKOXc2ZHdOVElYYnpCb01tcjVxYzdpcHBvRGxwel9kWmt0S1ZVQjVCN0VkNUUxTWVtdlRRZm1OTjQ0UlRidUp1Z0U1cVRCQkVfN1lCaTMtMlN5My1SMW45WGM3UE53eDdOQ3hvb0FaVE5LSnFXUk5YY2ktbjVuTWZZNFgwZ25SQk1EOUozS1lESGxJdXJtMXNqQ3BtcHppV3pCaw?oc=5",
+     "publishedAt": 1793968200000,
+     "importanceScore": 57
+    },
+    {
+     "source": "Nuclear Energy",
+     "title": "AI Is Driving America’s Nuclear Power Boom, but There’s a Hidden Fuel Problem - Inc.com",
+     "link": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxOdzB5bEpTM3lSc3JnWDVzd2JIZlFxSHRHcEVrbU5CczNoNExzdGlyX29aekRpaHpCTFVfN2NxUkZ1WjB0SURleS1maWRtMnU3dS1Cd2JZdGpkOGI4QnZUdXBvMFZwek5SV2NEQVM0SEZsMm1tdnhvbjlRQmF4WklCUjRDdngteE9UUFFxM2ZES3QtNTV6S0NucTZjczdjNC12WmtfV2U5ekQtbW5OQldVVXVUcllOVFZr?oc=5",
+     "publishedAt": 1793970867000,
+     "importanceScore": 43
+    },
+    {
+     "source": "Oil & Gas",
+     "title": "US Energy Chief Says Saudi Arabia Oil Pipeline Should Be Back Online Within Days - EnergyNow.com",
+     "link": "https://news.google.com/rss/articles/CBMisAFBVV95cUxOYVFfQURsRkJaa0lKTlJKRHN1WFlyNlgwSnZScEFqTW95MlJWTW9MT240ZXUzYjNnRTAzblVqSEhkX0xQaFVpSWpkbm9md1Y5MUNUMEY2c0tmUXNrZjdvT2dTa21xQ1o0ZVRYcHFJTTVlVk1sbXBVZm01d3FWd0FCdUo4WC1OS1VGaGMxcDRsc1ZwaGFYZ1ZEQmt6aEQzUXhuLUxtOGtBTjlOU2FnVDhRQQ?oc=5",
+     "publishedAt": 1793957599000,
+     "importanceScore": 28
+    }
+   ]
+  },
+  "thinktanks": {
+   "items": [
+    {
+     "source": "ISW",
+     "title": "Oleshky Ceasefire Demonstrates That Russia Has the Capability, but Not the Will, to End Civilian Suffering in Ukraine - Institute for the Study of War",
+     "link": "https://news.google.com/rss/articles/CBMi_gFBVV95cUxObUtrMGdpN1lUU0RqM2JlQm5KanJLeWtnNXFzZWFnWjdscHdNYzNwQmRaLUI1Q1F2dzQ4ZkNQT2pNWC03a2JuYlloZUlad29EVzU4U19hQkh2QVdTeUFvTzIxNFdSczZfdjZEWldaYVFtWGJESnNmYUx1RnREQUVHT0kza29qeVZLbGtrX2NhclhjeEFMQnlDaDdDS0Q5RE14cHBCeGZiYVVrd1RrbXRoZzJ0cXhsTjcxTndidHViNGhlZFFtbk5yaDdwSzZsV0JqbW1VYV9aSmQ5WFQzcHVUU2JaV0cxWi1hcWJnZy02cWw3WmNmZU5YYnpITnZRUQ?oc=5",
+     "publishedAt": 1793841323000,
+     "importanceScore": 77
+    },
+    {
+     "source": "Foreign Policy",
+     "title": "How a World War I Crackdown Predicted ICE",
+     "link": "https://foreignpolicy.com/2026/11/06/backderf-dissidents-review-cartoonists-censorship-press-freedom-ice/",
+     "publishedAt": 1793982626000,
+     "importanceScore": 63
+    },
+    {
+     "source": "ISW",
+     "title": "Russian Offensive Campaign Assessment, November 5, 2026 - Institute for the Study of War",
+     "link": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxPYkdZZUo3R1dhenBmSHh3N1lIb3dxeENZUEhzdjktM0hvY3dwdGJSZUlidVNZQjVHRGxxY1hOTkRidkNITnZCTWhXTHQ1dzhhVWlMSTNZLWFQRE1QMUNCZ1NCRHVtcjFEMVlFNXFfV0pkMXFWaFFtMlY4YzFCc3lUSHR3NUxiTnRXOXpFSHhkTF9pR2U5enBQeDZmaUZmYUg0V2FQYkoyY1NMRnc?oc=5",
+     "publishedAt": 1793941792000,
+     "importanceScore": 63
+    }
+   ]
+  },
+  "crisis": {
+   "items": []
+  },
+  "layoffs": {
+   "items": [
+    {
+     "source": "Layoffs.fyi",
+     "title": "Layoffs with dignity? Why these tech companies are offering free laptops and LinkedIn Premium. - MarketWatch",
+     "link": "https://news.google.com/rss/articles/CBMiywFBVV95cUxPa3JjckpFQ0lOdDdvaEhYWVVJeTA0Vk8xeEp0dEVCWURvZGlDeVozX0JTYk90S2ZjUGh4RFg2REtQbEpHYlFRQ2ZsLUtPRWc4VXNhQWc0OXJwMDVnLXAwR2Q0ZV9NSUZvdEY2dEdIWWg4RnoxOTBKT1ZtZEtBMjZqRU5zY2hqUUJPOUp2NXBoTXE0TkE0SWZneF9WUzkyYXlqcUJzR09PMU5zNmF6ZHR0d2VwaHlqeFV1cXY0NGhEWG1pN0pQOVFmWGJlYw?oc=5",
+     "publishedAt": 1793982420000,
+     "importanceScore": 22
+    },
+    {
+     "source": "Layoffs News",
+     "title": "SNY hit with major layoffs, show cancellations; website shuttered: Sources - The New York Times",
+     "link": "https://news.google.com/rss/articles/CBMilgFBVV95cUxOaHNnUjBaWU84b3ZreGU3aXQxVi1kVlFXMXNUZnJGcTlfOXp2TFFQMWgzRVctNDdkWThnR2M2ODJjMjBYR3BJMmZERFFLMlNkc2lFdXZfeHVVYWZSRm9YNE4wWmVFY2RMN1pRU3N3Yk9MRzNEMEhFc0ZnSHVxLU9PenlPSEFUNE45QWtZWWRwWjIzd3VKSmc?oc=5",
+     "publishedAt": 1793989022000,
+     "importanceScore": 18
+    },
+    {
+     "source": "Layoffs News",
+     "title": "Tech layoffs November update: Job cuts hit workers at Amazon, Angi, Block, Canva, and Squarespace - Fast Company",
+     "link": "https://news.google.com/rss/articles/CBMimAFBVV95cUxQWGRocGEwcllhcnV1Q1lKc1RmVG90dG1tUERrSFhOcWhmZEJFR1VlSGdqdWZpU09ZR2F2MW1tTnplcTN2aDBsRkpmLV96WklwNWxqSzVOYlB5LTR0WmFSVGlKSnF0TVU4WDlCaG1FaXRvY0k3MW9kWkdiUlRMdlFWWFNLMkpJMDB5LXV5TjVwT3NxQ05rbVlBTA?oc=5",
+     "publishedAt": 1793983508000,
+     "importanceScore": 17
+    }
+   ]
+  },
+  "science": {
+   "items": [
+    {
+     "source": "BBC Science",
+     "title": "How climate change worsens heatwaves, droughts, wildfires and floods",
+     "link": "https://www.bbc.co.uk/news/articles/cy4dgp1p3p1o?at_medium=RSS&at_campaign=rss",
+     "publishedAt": 1793983410000,
+     "importanceScore": 55
+    },
+    {
+     "source": "BBC Science",
+     "title": "A really simple guide to climate change",
+     "link": "https://www.bbc.co.uk/news/articles/c9w15nggj58o?at_medium=RSS&at_campaign=rss",
+     "publishedAt": 1793983251000,
+     "importanceScore": 41
+    },
+    {
+     "source": "BBC Science",
+     "title": "What is the Paris Agreement and why does 1.5C matter?",
+     "link": "https://www.bbc.co.uk/news/articles/c93d59d4zy1o?at_medium=RSS&at_campaign=rss",
+     "publishedAt": 1793983147000,
+     "importanceScore": 41
+    }
+   ]
+  },
+  "intel": {
+   "items": [
+    {
+     "source": "The War Zone",
+     "title": "Russian Mi-28 Attack Helicopters Are Now Firing Cruise Missiles",
+     "link": "https://www.twz.com/air/russian-mi-28-attack-helicopter-fires-cruise-missile",
+     "publishedAt": 1793986211000,
+     "importanceScore": 64
+    },
+    {
+     "source": "gCaptain",
+     "title": "U.S. Targets Cuba’s Oil Tanker Fleet in New Sanctions Crackdown",
+     "link": "https://gcaptain.com/u-s-targets-cubas-oil-tanker-fleet-in-new-sanctions-crackdown/",
+     "publishedAt": 1793985107000,
+     "importanceScore": 63
+    },
+    {
+     "source": "gCaptain",
+     "title": "Seafarer Killed in Suspected Missile Attack on Tanker in Gulf",
+     "link": "https://gcaptain.com/seafarer-killed-in-suspected-missile-attack-on-tanker-in-gulf/",
+     "publishedAt": 1793982767000,
+     "importanceScore": 63
+    }
+   ]
+  }
+ },
+ "feedStatuses": {},
+ "generatedAt": "2026-11-06T19:03:23.729Z",
+ "coverage": {
+  "state": "complete"
+ }
+}

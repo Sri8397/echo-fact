@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">Nyelv</string>
+    <string name="settings_map_provider">Térképcsempe-szolgáltató</string>
+    <string name="settings_map_theme">Térkép témája</string>
+    <string name="settings_globe_preset">Vizuális előbeállítás</string>
+    <string name="settings_theater_presets">Lefedettségi csomagok</string>
+    <string name="settings_stream_quality">Videó minősége</string>
+    <string name="settings_stream_idle_stop">Élő videó leállítása üresjárat során</string>
+</resources>

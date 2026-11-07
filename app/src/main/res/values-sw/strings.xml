@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_language">Lugha</string>
+    <string name="settings_map_provider">Mtoa Kigae cha Ramani</string>
+    <string name="settings_map_theme">Mandhari ya Ramani</string>
+    <string name="settings_globe_preset">Mtindo wa mwonekano</string>
+    <string name="settings_theater_presets">Mipangilio ya ufuatiliaji</string>
+    <string name="settings_stream_quality">Ubora wa Video</string>
+    <string name="settings_stream_idle_stop">Simamisha video moja kwa moja wakati umekaa bila kufanya kitu</string>
+</resources>

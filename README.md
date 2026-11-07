@@ -1,4 +1,4 @@
-# GodsEye World Radar — by Suvidha
+# Suvidha Radar — GodsEye World Radar
 
 Native Kotlin/Jetpack Compose migration, based on the approved Suvidha radar prototype.
 

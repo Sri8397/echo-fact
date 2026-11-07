@@ -25,7 +25,7 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
-        manifestPlaceholders["appLabel"] = "GodsEye World Radar"
+        manifestPlaceholders["appLabel"] = "Suvidha Radar"
         // Optional server-hosted Explore catalog (same JSON as assets/explore-catalog.v1.json). Empty: bundled only.
         buildConfigField("String", "EXPLORE_CATALOG_URL", configLiteral(publicConfig("EXPLORE_CATALOG_URL")))
         // Optional Cesium ion token for world terrain on the CesiumJS globe. Empty: free Esri imagery, no terrain.
@@ -50,7 +50,7 @@ android {
         debug {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-dev"
-            manifestPlaceholders["appLabel"] = "GodsEye World Radar"
+            manifestPlaceholders["appLabel"] = "Suvidha Radar Local"
         }
         release {
             isMinifyEnabled = true
